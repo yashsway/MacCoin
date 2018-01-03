@@ -20,7 +20,7 @@
     "build-js": "react-scripts build",
     "build": "npm-run-all build-css build-js",
     "test": "react-scripts test --env=jsdom",
-    "lint": "prettier-eslint \"src/**/*.js\"",
+    "lint": "prettier-eslint --write \"src/**/*.js\"",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
