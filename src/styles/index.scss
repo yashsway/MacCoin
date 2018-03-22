@@ -11,7 +11,7 @@ body {
   font-family: sans-serif;
   height: 100%;
   background: $primary-colour;
-  color: $text-color;
+  color: $text-colour;
 }
 
 .nav {
@@ -24,7 +24,7 @@ body {
   }
   a {
     font-size: $medium-text;
-    color: $text-color;
+    color: $text-colour;
 
     &:hover, &.current {
       background-color: $primary-colour !important;
@@ -40,7 +40,7 @@ body {
 }
 
 .btn {
-  color: $text-color;
+  color: $text-colour;
 }
 
 .btn.btn-mac {
@@ -58,9 +58,9 @@ body {
   font-size: $medium-text;
 
   &:hover, &:focus, &:active, &.active {
-    color: $text-color;
+    color: $text-colour;
   }
   &:active, &.active {
-    color: $text-color;
+    color: $text-colour;
   }
 }

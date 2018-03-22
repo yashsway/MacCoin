@@ -1,7 +1,30 @@
 @import "variables";
 
 .wallet-page {
-  height: 100%;
   display: flex;
   flex-direction: column;
+
+  .wallet-header {
+    margin-top: $primary-spacing * 5;
+  }
+
+  .info-box {
+    padding: $primary-spacing * 2;
+    border: 1px solid $text-colour;
+    text-align: center;
+  }
+
+  .transactions-container {
+    flex-direction: column;
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .wallet-info {
+      flex-direction: column;
+      width: 80%;
+      margin: 0 auto;
+    }
+  }
 }

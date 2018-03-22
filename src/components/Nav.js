@@ -9,7 +9,7 @@ const Nav = ({current}) => (
       <Link className={current == 'main' ? 'current' : ''} to="/">MACCOIN</Link>
     </li>
     <li>
-      <Link className={current == 'mining' ? 'current' : ''} to="/mine">Mine</Link>
+      <Link className={current == 'mining' ? 'current' : ''} to="/mining">Mine</Link>
     </li>
     <li>
       <Link className={current == 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
