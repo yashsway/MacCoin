@@ -4,4 +4,16 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  .mining-text {
+    margin-top: $primary-spacing * 5;
+  }
+
+  .mining-gif {
+    width: 300px;
+  }
+
+  .balance-container {
+    flex-grow: 1;
+  }
 }
