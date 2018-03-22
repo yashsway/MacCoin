@@ -5,25 +5,6 @@
   margin-bottom: 0.335em;
 }
 
-.subheading {
+.small-heading {
   font-size: $medium-text;
 }
-
-.main-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  .heading-block {
-    flex-grow: 1;
-  }
-
-  .btn-wrapper {
-    flex-grow: 2;
-
-    .btn.btn-mac {
-      height: 60px;
-    }
-  }
-}
-

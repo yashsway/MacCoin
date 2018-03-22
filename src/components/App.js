@@ -1,23 +1,22 @@
 import React from 'react';
-import { Button } from 'react-bootstrap';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+
+import Main from './Main';
+import Mining from './Mining';
+import Wallet from './Wallet';
+import About from './About';
 
 import '../styles/App.css';
 
 const App = () => (
-  <div className='main-page'>
-    <div className='heading-block'>
-      <h1 className='heading center'>
-        MACCOIN
-      </h1>
-      <p className='center subheading'>~funny stuff here~</p>
+  <Router>
+    <div className='router-root'>
+      <Route exact path="/" component={Main} />
+      <Route path="/mine" component={Mining} />
+      <Route path="/wallet" component={Wallet} />
+      <Route path="/about" component={About} />
     </div>
-    <div className='center btn-wrapper'>
-      <Button className='btn-mac' bsSize='large' href='#'>Start Mining!</Button>
-    </div>
-    <div className='center'>
-      <Button bsStyle='link' href='#'>What is MacCoin?</Button>
-    </div>
-  </div>
+  </Router>
 );
 
 export default App;

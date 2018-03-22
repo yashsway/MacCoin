@@ -1,0 +1,19 @@
+@import "variables";
+
+.main-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .heading-block {
+    flex-grow: 1;
+  }
+
+  .btn-wrapper {
+    flex-grow: 2;
+
+    .btn.btn-mac {
+      height: 60px;
+    }
+  }
+}
