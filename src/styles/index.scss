@@ -10,7 +10,28 @@ body {
   padding: 0;
   font-family: sans-serif;
   height: 100%;
-  border: 15px solid $primary-colour;
+  background: $primary-colour;
+  color: $text-color;
+}
+
+.nav {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+
+  li {
+    flex-grow: 1;
+  }
+  a {
+    font-size: $medium-text;
+    color: $text-color;
+
+    &:hover, &.current {
+      background-color: $primary-colour !important;
+      border-bottom: 5px solid $secondary-colour;
+    }
+  }
+  
 }
 
 .center {
@@ -18,11 +39,15 @@ body {
   justify-content: center;
 }
 
+.btn {
+  color: $text-color;
+}
+
 .btn.btn-mac {
-  background: none;
-  border: 8px solid $secondary-colour;
+  border: none;
+  background: $secondary-colour;
     &:hover, &:focus, &:active, &.active {
-      border-color: $tertiary-colour;
+      background: $tertiary-colour;
     }
     &:active, &.active {
       box-shadow: none;
@@ -30,10 +55,12 @@ body {
 }
 
 .btn.btn-link {
-  color: $text-color;
   font-size: $medium-text;
-}
 
-.no-grow {
-  flex-grow: 0 !important;
+  &:hover, &:focus, &:active, &.active {
+    color: $text-color;
+  }
+  &:active, &.active {
+    color: $text-color;
+  }
 }
