@@ -1,7 +1,39 @@
 @import "~normalize.css";
+@import "variables";
+
+html, #root {
+  height: 100%;
+}
 
 body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  height: 100%;
+  border: 15px solid $primary-colour;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+}
+
+.btn.btn-mac {
+  background: none;
+  border: 8px solid $secondary-colour;
+    &:hover, &:focus, &:active, &.active {
+      border-color: $tertiary-colour;
+    }
+    &:active, &.active {
+      box-shadow: none;
+    }
+}
+
+.btn.btn-link {
+  color: $text-color;
+  font-size: $medium-text;
+}
+
+.no-grow {
+  flex-grow: 0 !important;
 }
