@@ -2,18 +2,26 @@ var express = require('express');
 var app = express();  
 var server = require('http').createServer(app);  
 var io = require('socket.io')(server);
+var Loki = require('lokijs');
 var db = new Loki('loki.json');
+var path = require('path');
+require('dotenv').config();
 
 var wallet = db.addCollection('wallet');
 var transaction = db.addCollection('transaction');
 var transactionCount = transaction.count();
 
-app.use(express.static(__dirname + '/bower_components'));  
-app.get('/', function(req, res,next) {  
-    res.sendFile(__dirname + '/index.html');
+// Serve frontend/public
+app.use(express.static(path.join(__dirname, 'frontend/build')));
+
+app.get('/*', function (req, res) {
+    res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
 });
 
-server.listen(4200); 
+var port = process.env.PORT || 80;
+server.listen(port, () => {
+    console.log("Listening on port: " + port);
+}); 
 
 io.on('connection', function(client) {  
     console.log('Client connected...');
@@ -35,11 +43,12 @@ io.on('connection', function(client) {
     // client.emit('updateBalance', /* user's balance */); 
 });
 
-var delay = 500;
-window.setInterval(distributeCoins(), delay);
+var delay = 1000;
+setInterval(distributeCoins, delay);
 
 function distributeCoins() {
     // TODO: update database
+    console.log("Distributing coins");
 }
 
 function createWallet() {
