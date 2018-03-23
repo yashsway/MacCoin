@@ -24,10 +24,19 @@ server.listen(port, () => {
 }); 
 
 io.on('connection', function(client) {  
-    console.log('Client connected...');
+    console.log('Connection made...');
 
-    client.on('join', function(data) {
-        console.log(data);
+    client.on('requestWallet', function(callback) {
+        console.log("Wallet requested");
+        var wallet = createWallet();
+        client['wallet_id'] = wallet['wallet_id'];
+        console.log("Created wallet: " + wallet['wallet_id']);
+        callback(wallet);
+    });
+
+    client.on('haveWallet', function(id) {
+        client['wallet_id'] = id;
+        console.log("Existing wallet: "+client['wallet_id']);
     });
 
     client.on('send', function(amount, from_wallet_key, from_wallet_id, to_wallet_id) {
@@ -48,17 +57,34 @@ setInterval(distributeCoins, delay);
 
 function distributeCoins() {
     // TODO: update database
-    console.log("Distributing coins");
 }
 
+function makeid() {
+    var text = "";
+    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+  
+    for (var i = 0; i < 5; i++)
+      text += possible.charAt(Math.floor(Math.random() * possible.length));
+  
+    return text;
+  }
+
 function createWallet() {
+    var key = makeid();
+    var id = makeid();
+    // If duplicate, try again
+    while (wallet.find({wallet_id: id}).length > 0) {
+        console.log("Wallet ID not unique, trying again...")
+        id = makeid();
+    }
     wallet.insert({
         // Need to generate the ids and keys
-        wallet_id: "abc123",
-        wallet_key: "abc123",
+        wallet_id: id,
+        wallet_key: key,
         balance: 0,
         created: new Date()
     });
+    return {wallet_id: id, wallet_key: key};
 }
 
 function createTransaction(amount, from_wallet_id, to_wallet_id,) {
