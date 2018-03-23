@@ -19,17 +19,22 @@ class Mining extends Component {
   }
 
   componentDidMount() {
+    console.log("MINING ON!");
     Connection.subscribe("mining", this.updateState);
+    Connection.emit('startMining', []);
+
     window.onblur = () => {
-      Connection.emit('stopMining');
+      Connection.emit('stopMining', []);
     };
     window.onfocus = () => {
-      Connection.emit('startMining');
+      Connection.emit('startMining', []);
     };
   }
 
   componentWillUnmount() {
+    Connection.emit('stopMining', []);
     Connection.unsubscribe("mining");
+    console.log("MINING OFF!");
   }
 
   updateState(state) {

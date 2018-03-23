@@ -16,7 +16,7 @@ var setState = (key, value) => {
 };
 
 var emit = (event, parameters) => {
-    socket.emit(event);
+    socket.emit(event, ...parameters);
 }
 
 var unsubscribe = (name) => {
@@ -60,6 +60,8 @@ var subscribe = (name, subscriber) => {
             });
         })
     }
+     //Now that we're set up, send the state to the subscriber
+     subscriber(state);
 }
 
 var Connection = {subscribe, unsubscribe, emit};
