@@ -62,12 +62,13 @@ var subscribe = (name, subscriber) => {
             }
 
             // SOCKET EVENT LISTENERS
-            // updateBalance 
             socket.on('updateBalance', (newBalance) => {
+                console.log('update balance!');
                 setState('balance', newBalance);
             });
 
             socket.on('updateTransactions', (newTransactions) => {
+                console.log('update transactions!');
                 setState('transactions', newTransactions);
             });
         })
