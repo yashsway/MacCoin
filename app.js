@@ -179,10 +179,12 @@ io.on('connection', function(client) {
             // Let both the from and to clients know that the transaction happened (if they're connected)
             clientsForWallet[to_wallet_id].map((c) => {
                 c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
+                c.emit('updateBalance', toBalance);
             });
 
             clientsForWallet[from_wallet_id].map((c) => {
                 c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
+                c.emit('updateBalance', fromBalance);
             });
         } else {
             console.log("User tried to send more than they had - cancelling");
@@ -337,7 +339,7 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
     toWallet.balance = toWallet.balance + amount;
 
-    return {"fromBalance": fromWallet.balance, "toWallet": toWallet.balance};
+    return {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
 }
 
 function getTransactionsForWallet(walletId) {
