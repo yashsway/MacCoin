@@ -1,6 +1,7 @@
 import openSocket from 'socket.io-client';
 
 var socket;
+var connected = false;
 var subscribers = {};
 var state = {
     balance: 0,
@@ -32,6 +33,7 @@ var subscribe = (name, subscriber) => {
         socket = openSocket('http://localhost:'+port);
         socket.on('connect', () => {
             console.log("Connected to server");
+            connected = true;
 
             // Does this machine have a wallet already?
             var wallet = window.localStorage.getItem('wallet_id');
@@ -58,6 +60,10 @@ var subscribe = (name, subscriber) => {
             // updateBalance 
             socket.on('updateBalance', (newBalance) => {
                 setState('balance', newBalance);
+            });
+
+            socket.on('updateTransactions', (newTransactions) => {
+                setState('transactions', newTransactions);
             });
         })
     }

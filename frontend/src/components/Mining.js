@@ -11,6 +11,7 @@ import { createConnection } from 'net';
 class Mining extends Component {
   constructor(props) {
     super(props);
+    this.initialized = false;
     this.state = {
       balance: 0,
       walletID: '-'
@@ -20,8 +21,6 @@ class Mining extends Component {
 
   componentDidMount() {
     Connection.subscribe("mining", this.updateState);
-    this.startMining();
-
     // Start the heartbeat
     this.heartbeat = setInterval(() => {
       Connection.emit('miningHeartbeat');
@@ -41,6 +40,10 @@ class Mining extends Component {
   }
 
   updateState(state) {
+    if (!this.initalized && document.hasFocus()){
+      this.startMining();
+      this.initalized = true;
+    }
     console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
   }
