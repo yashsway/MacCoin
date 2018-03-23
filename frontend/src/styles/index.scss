@@ -22,6 +22,7 @@ body {
   li {
     flex-grow: 1;
   }
+
   a {
     font-size: $medium-text;
     color: $text-colour;
@@ -31,7 +32,26 @@ body {
       border-bottom: 5px solid $secondary-colour;
     }
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
   
+}
+
+.btn.hamburger {
+  float: right;
+  margin: $primary-spacing;
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .closed {
+    display: none;
+  }
 }
 
 .center {
