@@ -15,7 +15,8 @@ class Wallet extends Component {
       balance: 0,
       walletID: '',
       sendAmount: '',
-      recieverID: ''
+      recieverID: '',
+      teamValue: ''
     };
     this.updateState = this.updateState.bind(this);
   }
@@ -30,7 +31,7 @@ class Wallet extends Component {
 
   updateState(state) {
     console.log(state);
-    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
+    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, teamValue: state.teamValue});
   }
 
   sendTransaction() {
@@ -45,8 +46,13 @@ class Wallet extends Component {
     Connection.emit('send', params)
   }
 
+  updateTeam(team) {
+    this.setState({teamValue: team});
+    window.localStorage.setItem('team', team);
+  }
+
   render() {
-    const { sendAmount, recieverID, walletID, balance} = this.state;
+    const { sendAmount, recieverID, walletID, balance, teamValue} = this.state;
 
     return (
       <div className='wallet-page'>
@@ -86,8 +92,26 @@ class Wallet extends Component {
               </div>)
             }
           </Popup>
-
         </div>
+        <div className='form-row faculty-form'>
+          <ControlLabel>Team: </ControlLabel>
+          <FormControl
+            type='select'
+            componentClass='select'
+            value={teamValue}
+            onChange={(event) => this.updateTeam(event.target.value)}>
+            <option value=''>Select a team</option>
+            <option value='engineering'>Engineering</option>
+            <option value='commerce'>Commerce</option>
+            <option value='healthsci'>Health Sciences</option>
+            <option value='humanities'>Humanities</option>
+            <option value='kin'>Kinesiology</option>
+            <option value='nursing'>Nursing</option>
+            <option value='science'>Science</option>
+            <option value='socsci'>Social Sciences</option>
+          </FormControl>
+        </div>
+
         <p className='center small-heading wallet-header'>Transaction History:</p>
         <div className='center transactions-container'>
           <div className='info-box'>Recieved 400m from kda29 on Friday, March 23, 3:00pm</div>
