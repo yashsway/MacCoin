@@ -331,8 +331,10 @@ function createWallet() {
     return {wallet_id: id, wallet_key: key};
 }
 
+var txCounter = 0;
 function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     transactions.insert({
+        id: txCounter++,
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
         amount: amount,
