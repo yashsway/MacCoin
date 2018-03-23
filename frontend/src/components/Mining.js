@@ -16,6 +16,21 @@ class Mining extends Component {
   }
 
   componentDidMount() {
+
+    // Visibility event listener for activating/deactivating mining
+    var hidden, visibilityChange; 
+    if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+      hidden = "hidden";
+      visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+      hidden = "msHidden";
+      visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+      hidden = "webkitHidden";
+      visibilityChange = "webkitvisibilitychange";
+    }
+    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+
     // Connect to server
     var port = process.env.NODE_ENV === "production" ? 80 : 3001;
     this.socket = openSocket('http://localhost:'+port);
@@ -30,6 +45,7 @@ class Mining extends Component {
         console.log(walletData);
         window.localStorage.setItem('wallet_id', walletData['wallet_id']);
         window.localStorage.setItem('wallet_key', walletData['wallet_key'])
+        this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
       });
     } else { // Otherwise, let the server know who you are
       console.log("Already have wallet: " + window.localStorage.getItem('wallet_id'));
@@ -37,6 +53,13 @@ class Mining extends Component {
     }
   }
 
+  handleVisibilityChange() {
+    if (document["hidden"]) {
+      this.socket.emit('stopMining');
+    } else {
+      this.socket.emit('startMining');
+    }
+  }
 
   render() {
 
