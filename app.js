@@ -3,13 +3,28 @@ var app = express();
 var server = require('http').createServer(app);  
 var io = require('socket.io')(server);
 var Loki = require('lokijs');
-var db = new Loki('loki.json');
 var path = require('path');
 require('dotenv').config();
 
-var wallet = db.addCollection('wallet');
-var transaction = db.addCollection('transaction');
-var transactionCount = transaction.count();
+var wallets, transactions;
+var db = new Loki('database.json', {
+    autoload: true,
+    autoloadCallback: () => {
+        wallets = db.getCollection('wallets');
+        if(wallets === null) {
+            wallets = db.addCollection('wallets');
+        }
+
+        transactions = db.getCollection('transactions');
+        if(transactions === null) {
+            transactions = db.addCollection('transactions');
+        }
+
+        wallets.insert({"niko": "isgreat"});
+    },
+    autosave: true,
+    autosaveInterval: 4000,
+});
 
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
@@ -30,7 +45,6 @@ io.on('connection', function(client) {
         console.log("Wallet requested");
         var wallet = createWallet();
         client['wallet_id'] = wallet['wallet_id'];
-        console.log("Created wallet: " + wallet['wallet_id']);
         callback(wallet);
     });
 
@@ -40,7 +54,7 @@ io.on('connection', function(client) {
     });
 
     client.on('send', function(amount, from_wallet_key, from_wallet_id, to_wallet_id) {
-        var senderWallet = wallet.by("name", from_wallet_id);
+        var senderWallet = wallets.by("name", from_wallet_id);
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             createTransaction(amount, from_wallet_id, to_wallet_id);
             // update view
@@ -77,18 +91,19 @@ function createWallet() {
         console.log("Wallet ID not unique, trying again...")
         id = makeid();
     }
-    wallet.insert({
+    wallets.insert({
         // Need to generate the ids and keys
         wallet_id: id,
         wallet_key: key,
         balance: 0,
         created: new Date()
     });
+    console.log("Created wallet: " + id);
     return {wallet_id: id, wallet_key: key};
 }
 
 function createTransaction(amount, from_wallet_id, to_wallet_id,) {
-    transaction.insert({
+    transactions.insert({
         transaction_id: transactionCount++,
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
