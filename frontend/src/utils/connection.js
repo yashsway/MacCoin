@@ -72,9 +72,11 @@ var subscribe = (name, subscriber) => {
                 setState('transactions', newTransactions);
             });
         })
-    }
+        subscriber(state);
+    } else {
      //Now that we're set up, send the state to the subscriber
      subscriber(state);
+    }
 }
 
 var Connection = {subscribe, unsubscribe, emit};
