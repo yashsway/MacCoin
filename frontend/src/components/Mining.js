@@ -10,6 +10,7 @@ import '../styles/Mining.css';
 import { createConnection } from 'net';
 // static assets
 import CoinIcon from '../assets/mcoin.png';
+import CoinFeat from '../assets/coin-feat.png';
 
 class Mining extends Component {
   constructor(props) {
@@ -28,17 +29,16 @@ class Mining extends Component {
     // Start the heartbeat
     this.heartbeat = setInterval(() => {
       Connection.emit('miningHeartbeat');
-      this.setState({message:'Mining...'});
     }, 15000);
     Connection.emit('miningHeartbeat');
 
     window.onblur = (function() {
-      this.stopMining;
+      this.stopMining();
       this.setState({message:'Mining paused! Keep this window in focus to mine.'});
     }).bind(this);
     window.onfocus = (function() {
-      this.startMining;
-      this.setState({message:'Mining started...'});
+      this.startMining();
+      this.setState({message:'Mining...'});
     }).bind(this);
   }
 
@@ -54,6 +54,7 @@ class Mining extends Component {
   updateState(state) {
     if (!this.initalized && document.hasFocus()){
       this.startMining();
+      this.setState({message:'Mining...'});
     }
     this.initalized = true;
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
@@ -75,7 +76,7 @@ class Mining extends Component {
         <div className='block header-section'>
           <div className='container'>
             <div className='flex flex-row flex justify-end header-container'>
-              <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
+              <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link><img className='coin-icon_50' src={CoinIcon}></img></div>
               <div className='flex-auto flex-grow f1 p-font p-color'>
                 <Nav current='mining'/>
               </div>
@@ -88,14 +89,15 @@ class Mining extends Component {
               <img className='mining-gif' src='https://media.giphy.com/media/cnCnU42hrY0Ew/giphy.gif'></img>
             </div>
             <div className='pa3'>
-              <p className='block center-text f2'>Balance: {balance == 0 ? '-' : balance}<img className='coin-icon' src={CoinIcon}></img></p>
-              <p className='block center-text f3'>Wallet ID: {walletID}</p>
+              <p className='block center-text f2'>Your Wallet Balance: {balance == 0 ? '-' : balance}<img className='coin-icon_25' src={CoinIcon}></img></p>
+              <p className='block center-text f3'>Your <span className='highlight'>Unique</span> Wallet ID: {walletID}</p>
+              <div className='block center-text f3 s-font it c-d-color'>Status: {message}</div>
             </div>
           </div>
         </div>
         <div className='block message-section'>
-          <div className='container pv5 s-font it'>
-            {message}
+          <div className='container pv5'>
+            <img className='coin-feat' src={CoinFeat}></img>
           </div>
         </div>
       </div>

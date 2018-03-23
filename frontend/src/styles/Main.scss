@@ -16,23 +16,32 @@
         width: 50%;
       }
     }
-    & .lb-legend {
-      font-size: 0.5em;
+    /* chart not taking on styles */
+    svg {
+      @include small-only {
+        width: 200px;
+        height: 100px;
+      }
     }
   }
   & > .footer-section {
     background-color: $contrast-dark-color;
     & .footer-container {
       min-height: 10vh;
-      @include small-only {
-        min-width: 20vh;
+      
+      @include medium-only {
+        min-height: 15vh;
         flex-direction: column;
+        align-items: center;
+      }
+      @include small-only {
+        min-height: 20vh;
+        flex-direction: column;
+        align-items: center;
       }
     }
     & .footer-part {
       @extend .pv3;
-      height: 100%;
-      width: 100% / 3;
     }
   }
 }

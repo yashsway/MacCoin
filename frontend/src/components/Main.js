@@ -6,7 +6,7 @@ import { Connection } from '../utils/connection.js'
 import {BarChart,Legend} from 'react-easy-chart';
 
 import '../styles/Main.css';
-
+import CoinIcon from '../assets/mcoin.png';
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -61,7 +61,7 @@ class Main extends Component {
         <div className='block main-section'>
           <div className='container'>
             <div className='flex flex-column flex-nowrap items-center'>
-              <div className='flex-shrink f1 p-font p-color pt5'>MacCoin</div>
+              <div className='flex-shrink f1 p-font p-color pt5'>MacCoin<img className='coin-icon_50' src={CoinIcon}></img></div>
               <div className='flex-shrink f3 s-font c-d-color pb5'>{quote}</div>
               <div className='flex-grow'>
                 <div className ='center'>
@@ -70,9 +70,9 @@ class Main extends Component {
                 <div className = 'center' >
                     <Legend className='lb-legend' data={this.state.graphData} dataId={'x'} config={this.state.legendConfig} horizontal />
                 </div></div>
-                <h2 className='p-font f4'>This chart above updates live and shows the aggregate wealth of your friends on campus.</h2>
+                <h2 className='p-font f4'>Live MacCoin wealth distribution across campus</h2>
               <div className='flex-grow pv5'>
-                <h2 className='s-font f3 it'>What are <span className='highlight'>you</span> waiting for?</h2>
+                <h2 className='s-font f3 it'>Help your faculty - start mining <span className='highlight'>MacCoin</span> now!</h2>
                 <LinkContainer to='/mining'>
                   <Button className='btn-primary' bsSize='large'>Start Mining!</Button>
                 </LinkContainer>
@@ -81,27 +81,15 @@ class Main extends Component {
           </div>
         </div>
         <div className='block footer-section'>
-          <div className='flex flex-row p-font footer-container pa4'>
-            <div className='flex-grow center-text footer-part location-part content'>
-              <div className='flex flex-column justify-center'>
-                <div className='flex-shrink self-center'>
-                  McMaster University, Hamilton, Canada
-                </div>
-              </div>
+          <div className='flex flex-row justify-center p-font footer-container pa4'>
+            <div className='flex-grow footer-part self-center location-part '>
+              McMaster University, Hamilton, Canada
             </div>
-            <div className='flex-grow  center-text footer-part credit-part content'>
-              <div className='flex flex-column justify-center'>
-                <div className='flex-shrink self-center'>
-                  Software Engineering Class of 2018 | Built with ❤️ <div className='credits'>by the knaves</div>
-                </div>
-              </div>
+            <div className='flex-grow footer-part self-center credit-part '>
+              Software Engineering Class of 2018 | Built with ❤️ <div className='credits'>by the knaves</div>
             </div>
-            <div className='flex-grow center-text footer-part who-part content'>
-              <div className='flex flex-column justify-center'>
-                <div className='flex-shrink self-center'>
-                  <Link className='white-link' to='/about'>What is this?</Link>
-                </div>
-              </div>
+            <div className='flex-grow footer-part self-center who-part '>
+              <Link className='white-link' to='/about'>What is this?</Link>
             </div>
           </div>
         </div>

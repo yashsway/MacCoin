@@ -21,7 +21,7 @@ $desktop-max-width: 74.9375em;
 }
 /* Medium only */
 @mixin medium-only {
-    @media screen and (min-width: #{$phone-max-width}) and (max-width: #{$tablet-max-width}) {
+    @media screen and (min-width: #{$phone-width}) and (max-width: #{$tablet-max-width}) {
         @content;
     }
 }

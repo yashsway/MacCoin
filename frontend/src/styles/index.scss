@@ -29,7 +29,7 @@ body {
   display: block;
 }
 .navigation {
-  @extend .f3;
+  @extend .f2;
   @extend .right-text;
   list-style-type: none;
   @include small-only {
@@ -53,11 +53,22 @@ body {
     color: $contrast-light-color;
   }
 }
-.coin-icon {
+.coin-icon_25 {
   height: 25px;
   width: auto;
   display: inline-block;
   padding: 0px 3px 0px 3px;
+}
+.coin-icon_50 {
+  height: 50px;
+  width: auto;
+  display: inline-block;
+  padding: 0px 3px 0px 3px;
+}
+.coin-feat {
+  width: 80%;
+  height: auto;
+  margin: -25px;
 }
 // move this elsewhere!!
 .btn.hamburger {

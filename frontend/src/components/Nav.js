@@ -34,6 +34,9 @@ class Nav extends Component {
             <Link className={current === 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
           </li>
           <li>
+            <Link className={current === 'splash' ? 'current' : ''} to="/">Leaderboard</Link>
+          </li>
+          <li>
             <Link className={current == 'about' ? 'current' : ''} to="/about">Help</Link>
           </li>
         </ul>
