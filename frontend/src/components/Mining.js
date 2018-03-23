@@ -13,6 +13,8 @@ class Mining extends Component {
     super(props);
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.state = {
+      balance: 0,
+      walletID: ''
     };
   }
 
@@ -37,6 +39,7 @@ class Mining extends Component {
     var port = process.env.NODE_ENV === "production" ? 80 : 3001;
     this.socket = openSocket('http://localhost:'+port);
     console.log("Connected to server");
+
     this.socket.on('connect', ()=> {
       // Does this machine have a wallet already?
       var wallet = window.localStorage.getItem('wallet_id');
@@ -49,15 +52,22 @@ class Mining extends Component {
           window.localStorage.setItem('wallet_data', walletData['wallet_id']);
           window.localStorage.setItem('wallet_key', walletData['wallet_key'])
           this.socket.emit('haveWallet', walletData);
+          this.setState({walletID: walletData['wallet_id']});
         });
       } else { // Otherwise, let the server know who you are
         var id = window.localStorage.getItem('wallet_id');
         var key = window.localStorage.getItem('wallet_key')
         console.log("Already have wallet: " + id);
         this.socket.emit('haveWallet', {"wallet_id": id, "wallet_key": key});
+
+        this.setState({walletID: id});
       }
       // Bind visibility event listener
       document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+    });
+
+    this.socket.on('updateBalance', (newBalance) => {
+      this.setState({balance: newBalance});
     });
 
   }
@@ -73,6 +83,7 @@ class Mining extends Component {
   }
 
   render() {
+    const { balance, walletID } = this.state;
 
     return (
       <div className='mining-page'>
@@ -82,7 +93,8 @@ class Mining extends Component {
           <div className='center'>
             <img className='mining-gif' src='https://media.giphy.com/media/cnCnU42hrY0Ew/giphy.gif'></img>
           </div>
-          <p className='center small-heading'>Balance: {3874}m</p>
+          <p className='center small-heading'>Balance: {balance}m</p>
+          <p className='center small-heading'>Wallet ID: {walletID}</p>
         </div>
         <div className='center'>
           <LinkContainer to='/wallet'>
