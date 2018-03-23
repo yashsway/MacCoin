@@ -75,7 +75,7 @@ var clientsForWallet = {};
 var TELEMETRY_INTERVAL = 60000; // 1min
 var connectedClientsCount = 0;
 setInterval(() => {
-    firebaseDB.ref('telemetry/' + new Date().toString()).push({
+    firebaseDB.ref('telemetry/' + new Date().toString()).set({
         "active_miners": activeMiners.length,
     });
 }, TELEMETRY_INTERVAL);
