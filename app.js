@@ -133,7 +133,8 @@ io.on('connection', function(client) {
                 wallet_id: walletId,
                 wallet_key: walletKey,
                 balance: 0,
-                created: new Date()
+                created: new Date(),
+                team: "",
             });
         } else {
             // Sanity check that the key is the same
@@ -229,6 +230,8 @@ io.on('connection', function(client) {
         walletRecord.team = team;
         console.log(walletRecord);
         wallets.update(walletRecord);
+
+        console.log(client.wallet_id + " joined team " + team);
     });
 
     client.on('startMining', function() {
@@ -328,16 +331,15 @@ function createWallet() {
         wallet_id: id,
         wallet_key: key,
         balance: 0,
-        created: new Date()
+        created: new Date(),
+        team: "",
     });
     console.log("Created wallet: " + id);
     return {wallet_id: id, wallet_key: key};
 }
 
-var txCounter = 0;
 function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     transactions.insert({
-        id: txCounter++,
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
         amount: amount,

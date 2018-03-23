@@ -124,7 +124,7 @@ class Wallet extends Component {
         <p className='center small-heading wallet-header'>Transaction History:</p>
         <div className='center transactions-container'>
           { transactions.map((t) => {
-            return <div className='info-box'>Recieved {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+            return <div key={t.$loki} className='info-box'>Recieved {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
           })}
         </div>
       </div>
