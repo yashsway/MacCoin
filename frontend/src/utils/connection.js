@@ -16,7 +16,8 @@ var setState = (key, value) => {
 };
 
 var emit = (event, parameters) => {
-    socket.emit(event, ...parameters);
+    console.log(event);
+    socket.emit(event, parameters);
 }
 
 var unsubscribe = (name) => {

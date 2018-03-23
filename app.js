@@ -147,13 +147,14 @@ io.on('connection', function(client) {
         console.log("Wallet joined: " + walletId);
     });
 
-    client.on('send', function(transaction, callback) {
+    client.on('send', function(transaction) {
+        console.log(transaction);
         var from_wallet_id = transaction.from_wallet_id;
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
+        var amount = transaction.amount;
 
-        var senderWallet = wallets.getObject("wallet_id", from_wallet_id);
-        var allClients = io.sockets.clients();
+        var senderWallet = wallets.findObject({"wallet_id": from_wallet_id});
 
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             var newBalances = createTransaction(amount, from_wallet_id, to_wallet_id);
@@ -276,17 +277,18 @@ function createWallet() {
 
 function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     transactions.insert({
-        transaction_id: transactionCount++,
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
         amount: amount,
         time: new Date()
     });
 
-    var fromWallet = wallets.getObject("wallet_id", from_wallet_id);
+    console.log("Transaction created");
+
+    var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
     fromWallet.balance = fromWallet.balance - amount;
     
-    var toWallet = wallets.getObject("wallet_id", to_wallet_id);
+    var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
     toWallet.balance = toWallet.balance + amount;
 
     return {"fromBalance": fromWallet.balance, "toWallet": toWallet.balance};

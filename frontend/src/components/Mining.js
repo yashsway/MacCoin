@@ -19,27 +19,32 @@ class Mining extends Component {
   }
 
   componentDidMount() {
-    console.log("MINING ON!");
     Connection.subscribe("mining", this.updateState);
-    Connection.emit('startMining', []);
+    Connection.emit('startMining', {});
 
-    window.onblur = () => {
-      Connection.emit('stopMining', []);
-    };
-    window.onfocus = () => {
-      Connection.emit('startMining', []);
-    };
+    window.onblur = this.stopMining;
+    window.onfocus = this.startMining;
   }
 
   componentWillUnmount() {
     Connection.emit('stopMining', []);
     Connection.unsubscribe("mining");
-    console.log("MINING OFF!");
+    window.removeEventListener('onblur', this.stopMining);
+    window.removeEventListener('onfocus', this.startMining);
+    console.log("REMOVE EVENT LISTENERS");
   }
 
   updateState(state) {
     console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
+  }
+
+  stopMining() {
+    Connection.emit('stopMining', {});
+  }
+
+  startMining() {
+    Connection.emit('startMining', {});
   }
 
   render() {

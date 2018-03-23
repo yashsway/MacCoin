@@ -21,13 +21,11 @@ class Wallet extends Component {
   }
 
   componentDidMount() {
-    console.log("WALLET ON");
     Connection.subscribe("wallet", this.updateState);
   }
 
   componentWillUnmount() {
     Connection.unsubscribe("wallet");
-    console.log("WALLET OFF");
   }
 
   updateState(state) {
@@ -38,7 +36,13 @@ class Wallet extends Component {
   sendTransaction() {
     // Send transaction to backend.
     console.log(this.state.sendAmount, this.state.recieverID);
-    Connection.emit('send', [this.state.sendAmount, this.state.recieverID])
+    var params = {
+      from_wallet_id: window.localStorage.getItem("wallet_id"),
+      from_wallet_key: window.localStorage.getItem("wallet_key"),
+      to_wallet_id: this.state.recieverID,
+      amount: this.state.sendAmount
+    };
+    Connection.emit('send', params)
   }
 
   render() {
