@@ -20,7 +20,7 @@ class Mining extends Component {
 
   componentDidMount() {
     Connection.subscribe("mining", this.updateState);
-    Connection.emit('startMining', {});
+    this.startMining();
 
     // Start the heartbeat
     this.heartbeat = setInterval(() => {
@@ -34,6 +34,7 @@ class Mining extends Component {
 
   componentWillUnmount() {
     clearInterval(this.heartbeat);
+    this.stopMining();
     Connection.unsubscribe("mining");
     window.removeEventListener('onblur', this.stopMining);
     window.removeEventListener('onfocus', this.startMining);
