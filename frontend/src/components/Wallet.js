@@ -115,7 +115,7 @@ class Wallet extends Component {
             componentClass='select'
             value={team}
             onChange={(event) => this.updateTeam(event.target.value)}>
-            <option value=''>Select a team</option>
+            <option value='none'>Select a team</option>
             <option value='engineering'>Engineering</option>
             <option value='artsci'>Arts & Science</option>
             <option value='commerce'>Commerce</option>

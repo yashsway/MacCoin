@@ -21,7 +21,7 @@ var firebaseDB = firebaseApp.database();
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
 var CONFIG_HEARTBEAT_TIMEOUT = 30000;
-var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci"];
+var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci", "none"];
 
 
 var wallets, transactions, blocks;
@@ -148,7 +148,6 @@ io.on('connection', function(client) {
                 console.log("This shouldn't happen - existing wallet exists with mismatching key");
                 console.log("Expected: " + existingWallet.wallet_key);
                 console.log("Got: " + walletKey);
-                console.log(existingWallet);
                 client.disconnect(); // Don't fuck us up anymore
             }
         }
@@ -228,14 +227,12 @@ io.on('connection', function(client) {
     client.on('setTeam', function(team) {
         if (typeof team !== "string") return;
         // Team has to be part of the supported list
-        console.log('set team '+ team);
         if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
             return;
         }
         var walletRecord = wallets.findObject({ wallet_id: client.wallet_id});
         if(!walletRecord) return;
         walletRecord.team = team;
-        console.log(walletRecord);
         wallets.update(walletRecord);
 
         console.log(client.wallet_id + " joined team " + team);
