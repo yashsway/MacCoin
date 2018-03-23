@@ -1,5 +1,11 @@
 @import "~normalize.css";
 @import "variables";
+@import "mixins";
+@import "type";
+@import "space";
+@import "structure";
+@import "patterns";
+@import "inputs";
 
 html, #root, .router-root {
   height: 100%;
@@ -8,10 +14,10 @@ html, #root, .router-root {
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
   height: 100%;
-  background: $primary-colour;
-  color: $text-colour;
+  color: $text-color;
+  text-decoration: none;
+  @extend .p-font;
 }
 
 .nav {
@@ -24,12 +30,11 @@ body {
   }
 
   a {
-    font-size: $medium-text;
-    color: $text-colour;
-
+    @extend .f4;
+    color: $text-color;
     &:hover, &.current {
-      background-color: $primary-colour !important;
-      border-bottom: 5px solid $secondary-colour;
+      background-color: $primary-color !important;
+      border-bottom: 5px solid $secondary-color;
     }
   }
 
@@ -38,11 +43,8 @@ body {
   }
   
 }
-
+// move this elsewhere!!
 .btn.hamburger {
-  float: right;
-  margin: $primary-spacing;
-
   @media (min-width: 769px) {
     display: none;
   }
@@ -54,39 +56,13 @@ body {
   }
 }
 
-.center {
-  display: flex;
-  justify-content: center;
-}
+// .btn.btn-link {
+//   @extend .f4;
 
-.btn {
-  color: $text-colour;
-}
-
-.btn.btn-mac {
-  border: none;
-  background: $secondary-colour;
-    &:hover, &:focus, &:active, &.active {
-      background: $tertiary-colour;
-    }
-    &:active, &.active {
-      box-shadow: none;
-    }
-}
-
-.btn.btn-link {
-  font-size: $medium-text;
-
-  &:hover, &:focus, &:active, &.active {
-    color: $text-colour;
-  }
-  &:active, &.active {
-    color: $text-colour;
-  }
-}
-
-.form-row {
-  margin-top: $primary-spacing;
-  margin-bottom: $primary-spacing;
-}
-
+//   &:hover, &:focus, &:active, &.active {
+//     color: $text-color;
+//   }
+//   &:active, &.active {
+//     color: $text-color;
+//   }
+// }

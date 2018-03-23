@@ -22,14 +22,11 @@ class Nav extends Component {
     const { open } = this.state;
 
     return (
-      <div >
-        <Button className='btn-mac hamburger' bsSize='large' onClick={() => this.toggle()}>
+      <div className='fl-right'>
+        <Button className='btn-mac hamburger btn-light fl-right' bsSize='large' onClick={() => this.toggle()}>
           &#9776;
         </Button>
-        <ul className={`nav ${open ? '' : 'closed'}`}>
-          <li>
-            <Link className={current === 'main' ? 'current' : ''} to="/">MACCOIN</Link>
-          </li>
+        <ul className={`navigation right-text ${open ? '' : 'closed'}`}>
           <li>
             <Link className={current === 'mining' ? 'current' : ''} to="/mining">Mining</Link>
           </li>
@@ -37,7 +34,7 @@ class Nav extends Component {
             <Link className={current === 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
           </li>
           <li>
-            <Link className={current === 'about' ? 'current' : ''} to="/about">About</Link>
+            <Link className={current == 'about' ? 'current' : ''} to="/about">Help</Link>
           </li>
         </ul>
       </div>

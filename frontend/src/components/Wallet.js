@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Button, FormControl, ControlLabel } from 'react-bootstrap';
+import { Link } from "react-router-dom";
 import Popup from "reactjs-popup";
 import moment from 'moment';
 
@@ -58,13 +59,24 @@ class Wallet extends Component {
     const { sendAmount, recieverID, walletID, balance, team, transactions} = this.state;
 
     return (
-      <div className='wallet-page'>
-        <Nav current='wallet'/>
-        <p className='center small-heading wallet-header'>Your Wallet:</p>
-        <div className='wallet-info center'>
-          <div className='info-box'>id: {walletID}</div>
-          <div className='info-box'>balance: {balance}m</div>
-          <Popup trigger={<Button className='btn-mac' bsSize='large'>Send</Button>} modal closeOnDocumentClick>
+      <div className='block wallet-page pa5'>
+      <div className='block header-section'>
+        <div className='container'>
+          <div className='flex flex-row flex-nowrap justify-end'>
+            <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
+            <div className='flex-auto f1 p-font p-color'>
+              <Nav current='wallet'/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className='block main-section'>
+        <div className='container'>
+          <h2 className='f3'>Your Wallet:</h2>
+          <div className='flex flex-column flex-wrap f4'>
+            <div className='wallet-piece'>id: {walletID}</div>
+            <div className='wallet-piece'>balance: {balance}m</div>
+            <Popup trigger={<Button className='flex-auto flex-shrink mv3 btn-secondary'>Send coin to a friend</Button>} modal closeOnDocumentClick>
             { close => (
               <div>
                 <p className='small-heading'>Balance: {balance}m</p>
@@ -95,14 +107,10 @@ class Wallet extends Component {
               </div>)
             }
           </Popup>
-        </div>
-        <div className='form-row faculty-form'>
-        <div>
           <ControlLabel>Team: </ControlLabel>
           <Popup trigger={<Button className='btn-mac btn-question'>?</Button>} position="top left" closeOnDocumentClick>
             Pick a team to help in the leaderboards!
           </Popup>
-          </div>
           <FormControl
             type='select'
             componentClass='select'
@@ -119,15 +127,24 @@ class Wallet extends Component {
             <option value='science'>Science</option>
             <option value='socsci'>Social Sciences</option>
           </FormControl>
-        </div>
-
-        <p className='center small-heading wallet-header'>Transaction History:</p>
-        <div className='center transactions-container'>
-          { transactions.map((t) => {
-            return <div key={t.$loki} className='info-box'> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
-          })}
+          </div>
         </div>
       </div>
+      <div className='block transaction-section'>
+        <div className='container'>
+          <h2 className='f3'>Transaction History:</h2>
+          <div className='flex flex-column transactions-container'>
+            { transactions.map((t) => {
+              return <div key={t.$loki} className='info-box'> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+            })}
+          </div>
+        </div>
+      </div>
+      <div className='block footer-section'>
+        <div className='container'>
+        </div>
+      </div>
+    </div>
     );
   }
 }

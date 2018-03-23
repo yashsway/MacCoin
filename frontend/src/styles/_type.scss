@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css?family=Anaheim|Anonymous+Pro:400,400i,700');
+@import 'variables';
+/* typography */
+// Primary 
+.p-font {
+    font-family: 'Anonymous Pro', monospace;
+}
+// Secondary
+.s-font {
+    font-family: 'Anaheim', 'Roboto', sans-serif;
+}
+/* sizes */
+.f1 { font-size: 5rem; }
+.f2 { font-size: 3rem; }
+.f3 { font-size: 2.25rem; }
+.f4 { font-size: 1.5rem; }
+.f5 { font-size: 1.25rem; }
+.f6 { font-size: 1rem; }
+.f7 { font-size: .875rem; }
+
+/* text colors */
+.p-color {
+    color: $primary-color;
+}
+.s-color {
+    color: $secondary-color;
+}
+.c-l-color {
+    color: $contrast-light-color;
+}
+.c-d-color {
+    color: $contrast-dark-2-color;
+}
+
+/* center */
+.center-text {
+    text-align: center;
+}
+.left-text {
+    text-align: left;
+}
+.right-text {
+    text-align: right;
+}
+
+/* white space */
+.ws-normal { white-space: normal; }
+.nowrap { white-space: nowrap; }
+.pre { white-space: pre; }

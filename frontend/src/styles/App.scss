@@ -1,4 +1,5 @@
 @import "variables";
+@import "type";
 
 .heading {
   font-size: 4em;
@@ -6,5 +7,5 @@
 }
 
 .small-heading {
-  font-size: $medium-text;
+  @extend .f4;
 }
