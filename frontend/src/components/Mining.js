@@ -18,28 +18,8 @@ class Mining extends Component {
 
   componentDidMount() {
 
-    // Connect to server
-    var port = process.env.NODE_ENV === "production" ? 80 : 3001;
-    this.socket = openSocket('http://localhost:'+port);
-    console.log("Connected to server");
-    // Does this machine have a wallet already?
-    var wallet = window.localStorage.getItem('wallet_id');
-    // If not, get one!
-    if (wallet === undefined || wallet === null || wallet.length === 0) {
-      console.log("Requesting wallet");
-      this.socket.emit('requestWallet', function(walletData){
-        console.log("Got wallet!");
-        console.log(walletData);
-        window.localStorage.setItem('wallet_id', walletData['wallet_id']);
-        window.localStorage.setItem('wallet_key', walletData['wallet_key'])
-        this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
-      });
-    } else { // Otherwise, let the server know who you are
-      console.log("Already have wallet: " + window.localStorage.getItem('wallet_id'));
-      this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
-    }
-
     // Visibility event listener for activating/deactivating mining
+    // First check for proper browser type, but only bind after socket connection!
     var hidden, visibilityChange; 
     if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
       hidden = "hidden";
@@ -51,13 +31,40 @@ class Mining extends Component {
       hidden = "webkitHidden";
       visibilityChange = "webkitvisibilitychange";
     }
-    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+    this.hidden = hidden;
+
+    // Connect to server
+    var port = process.env.NODE_ENV === "production" ? 80 : 3001;
+    this.socket = openSocket('http://localhost:'+port);
+    console.log("Connected to server");
+    this.socket.on('connect', ()=> {
+      // Does this machine have a wallet already?
+      var wallet = window.localStorage.getItem('wallet_id');
+      // If not, get one!
+      if (wallet === undefined || wallet === null || wallet.length === 0) {
+        console.log("Requesting wallet");
+        this.socket.emit('requestWallet', (walletData) => {
+          console.log("Got wallet!");
+          console.log(walletData);
+          window.localStorage.setItem('wallet_data', walletData['wallet_id']);
+          window.localStorage.setItem('wallet_key', walletData['wallet_key'])
+          this.socket.emit('haveWallet', walletData);
+        });
+      } else { // Otherwise, let the server know who you are
+        var id = window.localStorage.getItem('wallet_id');
+        var key = window.localStorage.getItem('wallet_key')
+        console.log("Already have wallet: " + id);
+        this.socket.emit('haveWallet', {"wallet_id": id, "wallet_key": key});
+      }
+      // Bind visibility event listener
+      document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+    });
 
   }
 
   handleVisibilityChange() {
     if (this.socket){
-      if (document["hidden"]) {
+      if (document[this.hidden]) {
         this.socket.emit('stopMining');
       } else {
         this.socket.emit('startMining');
