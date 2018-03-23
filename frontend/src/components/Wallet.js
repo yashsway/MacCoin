@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, FormControl, ControlLabel } from 'react-bootstrap';
+import { Button, FormControl, ControlLabel, FormGroup } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import Popup from "reactjs-popup";
 import moment from 'moment';
@@ -8,6 +8,7 @@ import Nav from './Nav';
 import { Connection } from '../utils/connection.js'
 
 import '../styles/Wallet.css';
+import CoinIcon from '../assets/mcoin.png';
 
 class Wallet extends Component {
   constructor(props) {
@@ -19,9 +20,11 @@ class Wallet extends Component {
       sendAmount: '',
       recieverID: '',
       team: '',
-      transactions: []
+      transactions: [],
+      error: false
     };
     this.updateState = this.updateState.bind(this);
+    this.getValidationState = this.getValidationState.bind(this);
   }
 
   componentDidMount() {
@@ -48,6 +51,19 @@ class Wallet extends Component {
     Connection.emit('send', params)
   }
 
+  getValidationState(type) {
+    const amt = this.state.sendAmount;
+    if (isNaN(parseInt(amt)) || (amt < 0) || (amt%1!==0) || amt.toString().includes('.')) { 
+      return type=='form' ? 'error' : true;
+    }
+    else if (amt > 0) { 
+      return type=='form' ? 'success' : false;
+    }
+    else { 
+      return null;
+    }
+  }
+
   updateTeam(teamName) {
     console.log("set team");
     Connection.setState('team', teamName);
@@ -56,14 +72,14 @@ class Wallet extends Component {
   }
 
   render() {
-    const { sendAmount, recieverID, walletID, balance, team, transactions} = this.state;
+    const { sendAmount, recieverID, walletID, balance, team, transactions, error } = this.state;
 
     return (
       <div className='block wallet-page pa5'>
       <div className='block header-section'>
         <div className='container'>
           <div className='flex flex-row flex-nowrap justify-end'>
-            <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
+            <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link><img className='coin-icon_25' src={CoinIcon}></img></div>
             <div className='flex-auto f1 p-font p-color'>
               <Nav current='wallet'/>
             </div>
@@ -75,35 +91,37 @@ class Wallet extends Component {
           <h2 className='f3'>Your Wallet:</h2>
           <div className='flex flex-column flex-wrap f4'>
             <div className='wallet-piece'>id: {walletID}</div>
-            <div className='wallet-piece'>balance: {balance}m</div>
+            <div className='wallet-piece'>balance: {balance}<img className='coin-icon_25' src={CoinIcon}></img></div>
             <Popup trigger={<Button className='flex-auto flex-shrink mv3 btn-secondary wallet-action'>Send coin to a friend</Button>} modal closeOnDocumentClick>
             { close => (
               <div>
-                <p className='small-heading'>Balance: {balance}m</p>
-                <div className='form-row'>
-                  <ControlLabel>Amount: </ControlLabel>
-                  <FormControl
-                    type="number"
-                    value={sendAmount}
-                    placeholder="Enter amount"
-                    onChange={(event) => this.setState({sendAmount: event.target.value})}
-                  />
-                </div>
-                <div className='form-row'>
-                  <ControlLabel>Reciever Wallet ID: </ControlLabel>
-                  <FormControl
-                    type="text"
-                    value={recieverID}
-                    placeholder="Enter ID"
-                    onChange={(event) => this.setState({recieverID: event.target.value})}
-                  />
-                </div>
-                <div className='center'>
-                  <Button className='btn-mac' bsSize='large' onClick={() => {
-                    this.sendTransaction();
-                    close();
-                  }}>Send</Button>
-                </div>
+                <FormGroup controlId='formSendCoin' validationState={this.getValidationState('form')}>
+                  <p className='small-heading'>Balance: {balance}<img className='coin-icon_25' src={CoinIcon}></img></p>
+                  <div className='form-row'>
+                    <ControlLabel>Amount: </ControlLabel>
+                    <FormControl
+                      type="number"
+                      value={sendAmount}
+                      placeholder="Enter amount"
+                      onChange={(event) => this.setState({sendAmount: event.target.value})}
+                    />
+                  </div>
+                  <div className='form-row'>
+                    <ControlLabel>Reciever Wallet ID: </ControlLabel>
+                    <FormControl
+                      type="text"
+                      value={recieverID}
+                      placeholder="Enter ID"
+                      onChange={(event) => this.setState({recieverID: event.target.value})}
+                    />
+                  </div>
+                  <div className='center'>
+                    <Button className='btn-dark' disabled={this.getValidationState('btn')} bsSize='large' onClick={() => {
+                      this.sendTransaction();
+                      close();
+                    }}>Send</Button>
+                  </div>
+                </FormGroup>
               </div>)
             }
           </Popup>

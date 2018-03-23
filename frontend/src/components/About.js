@@ -5,13 +5,14 @@ import { Link } from "react-router-dom";
 import Nav from './Nav';
 
 import '../styles/About.css';
+import CoinIcon from '../assets/mcoin.png';
 
 const About = () => (
   <div className='block about-page'>
   <div className='block header-section'>
     <div className='container pa5'>
       <div className='flex flex-row flex-nowrap justify-end'>
-        <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
+        <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link><img className='coin-icon_25' src={CoinIcon}></img></div>
         <div className='flex-auto f1 p-font p-color'>
           <Nav current='about'/>
         </div>
