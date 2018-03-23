@@ -35,8 +35,8 @@ class Mining extends Component {
     clearInterval(this.heartbeat);
     this.stopMining();
     Connection.unsubscribe("mining");
-    window.removeEventListener('onblur', this.stopMining);
-    window.removeEventListener('onfocus', this.startMining);
+    window.onblur = null;
+    window.onfocus = null;
   }
 
   updateState(state) {
