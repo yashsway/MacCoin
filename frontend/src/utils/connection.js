@@ -7,7 +7,7 @@ var state = {
     balance: 0,
     wallet_id: '',
     transactions: [],
-    teamValue: '',
+    team: '',
     teamStats: []
 };
 
@@ -50,7 +50,7 @@ var subscribe = (name, subscriber) => {
                 console.log(walletData['team']);
                 socket.emit('haveWallet', walletData);
                 setState('wallet_id', walletData['wallet_id']);
-                setState('teamValue', window.localStorage.getItem('team'));
+                setState('team', window.localStorage.getItem('team'));
                 });
             } else { // Otherwise, let the server know who you are
                 var id = window.localStorage.getItem('wallet_id');
@@ -59,7 +59,7 @@ var subscribe = (name, subscriber) => {
                 console.log("Already have wallet: " + id);
                 socket.emit('haveWallet', {"wallet_id": id, "wallet_key": key});
                 setState('wallet_id', id);
-                setState('teamValue', team);
+                setState('team', team);
             }
 
             // SOCKET EVENT LISTENERS
@@ -83,7 +83,7 @@ var subscribe = (name, subscriber) => {
      subscriber(state);
 }
 
-var Connection = {subscribe, unsubscribe, emit};
+var Connection = {subscribe, unsubscribe, emit, setState};
 
 export {Connection};
 

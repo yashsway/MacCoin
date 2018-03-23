@@ -21,7 +21,8 @@ var firebaseDB = firebaseApp.database();
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
 var CONFIG_HEARTBEAT_TIMEOUT = 30000;
-var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci"];
+var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci","none"];
+
 
 var wallets, transactions, blocks;
 var db = new Loki('database.json', {
@@ -222,11 +223,9 @@ io.on('connection', function(client) {
         // Team has to be part of the supported list
         console.log('set team '+ team);
         if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
-            console.log(' oh no');
             return;
         }
-
-        var walletRecord = wallets.find({ wallet_id: client.wallet_id});
+        var walletRecord = wallets.findObject({ wallet_id: client.wallet_id});
         walletRecord.team = team;
         console.log(walletRecord);
         wallets.update(walletRecord);
@@ -332,7 +331,7 @@ function createWallet() {
         wallet_key: key,
         balance: 0,
         created: new Date(),
-        team: "",
+        team: "none",
     });
     console.log("Created wallet: " + id);
     return {wallet_id: id, wallet_key: key};
@@ -382,7 +381,6 @@ function getTeamStats() {
     console.log("Counting " + allWallets.length + " wallets");
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
-        console.log(w);
         if(w.team) {
             teamTotals[w.team] += w.balance;
         }
