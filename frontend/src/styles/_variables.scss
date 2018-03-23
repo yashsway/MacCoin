@@ -1,6 +1,22 @@
-$primary-spacing: 10px;
-$primary-colour: rgb(204, 52, 43);
-$secondary-colour: rgb(251,194,70);
-$tertiary-colour: rgb(236,168,84);
-$text-colour: white;
-$medium-text: 2em;
+/* colors */
+$primary-color: #FF342B;
+$primary-light-color: #FF5851;
+$primary-dark-color: #D12B24;
+$secondary-color: #FBC246;
+$secondary-light-color: #FBCD67;
+$secondary-dark-color: #CE9F3A;
+$contrast-light-color: #F1FAEE;
+$contrast-dark-color: #333B4C;
+$contrast-dark-2-color: #272D39;
+$text-color: #F1FAEE;
+
+/* spacing */
+/* padding and margins */
+$spacing-none: 0;
+$spacing-extra-small: .25rem;
+$spacing-small: .5rem;
+$spacing-medium: 1rem;
+$spacing-large: 2rem;
+$spacing-extra-large: 4rem;
+$spacing-extra-extra-large: 8rem;
+$spacing-extra-extra-extra-large: 16rem;

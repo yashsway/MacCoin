@@ -1,0 +1,73 @@
+/* form reset */
+.input-reset {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+.button-reset::-moz-focus-inner,
+.input-reset::-moz-focus-inner {
+    border: 0;
+    padding: 0;
+}
+/* buttons */
+.btn-primary {
+    @extend .f3;
+    @extend .p-font;
+    @extend .mh2;
+    text-shadow: none;
+    border: none;
+    background: $primary-color;
+    color: $text-color;
+    &:hover, &:focus, &:active, &.active {
+        background: $primary-dark-color;
+    }
+    &:active, &.active {
+        box-shadow: none;
+    }
+}
+.btn-secondary {
+    @extend .f4;
+    @extend .p-font;
+    @extend .mh2;
+    text-shadow: none;
+    border: none;
+    background: $secondary-color;
+    color: $contrast-dark-color;
+    &:hover, &:focus, &:active, &.active {
+        background: $secondary-dark-color;
+    }
+    &:active, &.active {
+        box-shadow: none;
+    }
+}
+.btn-dark {
+    @extend .f5;
+    @extend .p-font;
+    @extend .mh2;
+    text-shadow: none;
+    border: none;
+    background: $contrast-dark-color;
+    color: $contrast-light-color;
+    &:hover, &:focus, &:active, &.active {
+        background: $contrast-dark-2-color;
+        color: $contrast-light-color;
+    }
+    &:active, &.active {
+        box-shadow: none;
+    }
+}
+.btn-light {
+    @extend .f5;
+    @extend .p-font;
+    @extend .mh2;
+    text-shadow: none;
+    border: 2px solid $contrast-dark-color;
+    background: #fff;
+    color: $contrast-dark-color;
+    &:hover, &:focus, &:active, &.active {
+        border: 2px solid $contrast-dark-color;
+        background: $contrast-light-color;
+    }
+    &:active, &.active {
+        box-shadow: none;
+    }
+}

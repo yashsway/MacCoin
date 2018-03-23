@@ -1,19 +1,16 @@
 @import "variables";
+@import "mixins";
+@import "type";
+@import "space";
+@import "structure";
+@import "patterns";
+@import "inputs";
 
 .mining-page {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  .mining-text {
-    margin-top: $primary-spacing * 5;
-  }
-
-  .mining-gif {
-    width: 300px;
-  }
-
-  .balance-container {
-    flex-grow: 1;
-  }
+  @extend .p-font;
+  color: $primary-color;
+}
+.form-row {
+  margin-top: $spacing-large;
+  margin-bottom: $spacing-large;
 }
