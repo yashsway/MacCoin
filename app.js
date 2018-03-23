@@ -20,6 +20,7 @@ var firebaseDB = firebaseApp.database();
 
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
+var CONFIG_HEARTBEAT_TIMEOUT = 30000;
 
 var wallets, transactions, blocks;
 var db = new Loki('database.json', {
@@ -56,6 +57,8 @@ server.listen(port, () => {
     console.log("Listening on port: " + port);
 });
 
+// This is used by the socket io heartbeat
+var hbeat = {};
 
 // This is an array of all clients that are currently connected and active
 var activeMiners = [];
@@ -170,6 +173,24 @@ io.on('connection', function(client) {
         } else {
             console.log("User tried to send more than they had - cancelling");
         }
+    });
+
+    client.on('miningHeartbeat', function() {
+        //console.log("Hbeat");
+        hbeat[client.id] = Date.now();
+
+        setTimeout(() => {
+            var now = Date.now();
+            if (now - hbeat[client.id] > CONFIG_HEARTBEAT_TIMEOUT) {
+                console.log("Socket timed out: Heartbeat failed");
+
+                // Remove from active miners (if it exists)
+                var index = activeMiners.indexOf(client);
+                if (index > -1) {
+                    activeMiners.splice(index, 1);
+                }
+            }
+        }, CONFIG_HEARTBEAT_TIMEOUT);
     });
 
     client.on('startMining', function() {

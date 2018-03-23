@@ -22,16 +22,21 @@ class Mining extends Component {
     Connection.subscribe("mining", this.updateState);
     Connection.emit('startMining', {});
 
+    // Start the heartbeat
+    this.heartbeat = setInterval(() => {
+      Connection.emit('miningHeartbeat');
+    }, 15000);
+    Connection.emit('miningHeartbeat');
+
     window.onblur = this.stopMining;
     window.onfocus = this.startMining;
   }
 
   componentWillUnmount() {
-    Connection.emit('stopMining', []);
+    clearInterval(this.heartbeat);
     Connection.unsubscribe("mining");
     window.removeEventListener('onblur', this.stopMining);
     window.removeEventListener('onfocus', this.startMining);
-    console.log("REMOVE EVENT LISTENERS");
   }
 
   updateState(state) {
