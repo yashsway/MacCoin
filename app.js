@@ -6,7 +6,10 @@ var Loki = require('lokijs');
 var path = require('path');
 require('dotenv').config();
 
-var wallets, transactions;
+var CONFIG_BLOCK_TIME = 5000;
+var CONFIG_BLOCK_AMOUNT = 10000;
+
+var wallets, transactions, blocks;
 var db = new Loki('database.json', {
     autoload: true,
     autoloadCallback: () => {
@@ -18,6 +21,11 @@ var db = new Loki('database.json', {
         transactions = db.getCollection('transactions');
         if(transactions === null) {
             transactions = db.addCollection('transactions');
+        }
+
+        blocks = db.getCollection('blocks');
+        if(blocks === null) {
+            blocks = db.addCollection('blocks');
         }
 
         wallets.insert({"niko": "isgreat"});
@@ -36,21 +44,28 @@ app.get('/*', function (req, res) {
 var port = process.env.PORT || 80;
 server.listen(port, () => {
     console.log("Listening on port: " + port);
-}); 
+});
 
-io.on('connection', function(client) {  
-    console.log('Connection made...');
 
+// This is an array of all clients that are currently connected and active
+var activeMiners = [];
+
+io.on('connection', function(client) {
     client.on('requestWallet', function(callback) {
         console.log("Wallet requested");
         var wallet = createWallet();
-        client['wallet_id'] = wallet['wallet_id'];
         callback(wallet);
     });
 
     client.on('haveWallet', function(id) {
         client['wallet_id'] = id;
         console.log("Existing wallet: "+client['wallet_id']);
+
+        // Add them to the list of miners automatically
+        if(!client.raceCheck) {
+            client.active = true;
+            activeMiners.push(client);
+        }
     });
 
     client.on('send', function(amount, from_wallet_key, from_wallet_id, to_wallet_id) {
@@ -63,14 +78,50 @@ io.on('connection', function(client) {
         }
     });
 
+    client.on('startMining', function() {
+        // Prevent race condition
+        if (!client.active && client.wallet_id) {
+            activeMiners.push(client);
+            client.active = true;
+        }
+    });
+
+    client.on('stopMining', function() {
+        client.active = false;
+        var index = activeMiners.indexOf(client);
+        if (index > -1) {
+            activeMiners.splice(index, 1);
+        } else {
+            // Handle race condition where they leave the page before they send the haveWallet event
+            client.raceCheck = true;
+        }
+    });
+
+    client.on('disconnect', function() {
+        // Yay code duplication
+        var index = activeMiners.indexOf(client);
+        if (index > -1) {
+            activeMiners.splice(index, 1);
+        }
+    });
+
     // client.emit('updateBalance', /* user's balance */); 
 });
 
-var delay = 1000;
-setInterval(distributeCoins, delay);
+setInterval(distributeCoins, CONFIG_BLOCK_TIME);
 
 function distributeCoins() {
-    // TODO: update database
+    var minerCount = activeMiners.length;
+    var amountEach = CONFIG_BLOCK_AMOUNT / minerCount;
+
+    var allWalletsString = ""; // For debugging
+    for(var i = 0; i < activeMiners.length; i++) {
+        var walletId = activeMiners[i].wallet_id;
+        allWalletsString += walletId + ",";
+        var result = wallets.find({wallet_id: walletId});
+    }
+
+    console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + allWalletsString);
 }
 
 function makeid() {
@@ -87,7 +138,7 @@ function createWallet() {
     var key = makeid();
     var id = makeid();
     // If duplicate, try again
-    while (wallet.find({wallet_id: id}).length > 0) {
+    while (wallets.find({wallet_id: id}).length > 0) {
         console.log("Wallet ID not unique, trying again...")
         id = makeid();
     }
