@@ -31,7 +31,7 @@ class Nav extends Component {
             <Link className={current == 'main' ? 'current' : ''} to="/">MACCOIN</Link>
           </li>
           <li>
-            <Link className={current == 'mining' ? 'current' : ''} to="/mining">Mine</Link>
+            <Link className={current == 'mining' ? 'current' : ''} to="/mining">Mining</Link>
           </li>
           <li>
             <Link className={current == 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
