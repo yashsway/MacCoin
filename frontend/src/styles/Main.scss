@@ -6,6 +6,12 @@
     background-color: $contrast-light-color;
     &>.container {
       height: 90vh;
+      color: black;
+      width: 90%;
+      text-align: center;
+    }
+    @include small-only {
+      min-height: 110vh;
     }
   }
   & > .footer-section {

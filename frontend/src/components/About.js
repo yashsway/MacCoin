@@ -14,6 +14,13 @@ const About = () => (
         <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
         <div className='flex-auto f1 p-font p-color'>
           <Nav current='about'/>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className='block main-section'>
+    <div className='container'>
+      <div className='center'>
           <div className='about-info'>
           <p>MacCoin is the premier university student planned and operated cryptocurrency mining program! We obfuscate away the hard stuff so you don’t need to know anything!</p>
           <p>If you DO want to know things about crypto, here’s two important things you should know about: wallets and the BLOCKCHAIN</p>
@@ -22,17 +29,6 @@ const About = () => (
           <p>That’s all you need to know about MacCoin! So keep this page open and make $€£¥!</p>
           <p>Disclaimer: There is no monetary value associated with MacCoin. Unless someone buys some off of you, in which case I was never here if the CRA comes around.</p>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div className='block main-section'>
-    <div className='container'>
-      <div className='center'>
-        
-      </div>
-      <div className='pa3'>
-
       </div>
     </div>
   </div>

@@ -1,4 +1,5 @@
 @import "variables";
+@import "type";
 
 .about-page {
   height: 100%;
@@ -8,7 +9,10 @@
   .about-info {
     width: 80%;
     margin: 0 auto;
-    font-size: 1.2em;
     margin-top: $spacing-large*2;
+    & > * {
+      @extend .f4;
+      color: $primary-color;
+    }
   }
 }

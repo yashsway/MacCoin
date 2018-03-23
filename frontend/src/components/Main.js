@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Button } from 'react-bootstrap';
 import { LinkContainer } from 'react-router-bootstrap';
 import Chart from 'chart.js';
+import { Link } from "react-router-dom";
 import { Connection } from '../utils/connection.js'
 //import {BarChart} from 'react-chartjs';
 import {BarChart,Legend} from 'react-easy-chart';
@@ -139,7 +140,7 @@ class Main extends Component {
             <div className='flex-auto flex-shrink-1 center-text pa4 footer-part who-part'>
               <div className='flex flex-column justify-center h100'>
                 <div className='flex-shrink self-center'>
-                  What is this?
+                  <Link to='/about'>What is this?</Link>
                 </div>
               </div>
             </div>
