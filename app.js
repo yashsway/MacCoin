@@ -34,11 +34,11 @@ var db = new Loki('database.json', {
 
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
-
 app.get('/*', function (req, res) {
     res.sendFile(path.join(__dirname, 'frontend/build', 'index.html'));
 });
 
+// Start Server
 var port = process.env.PORT || 80;
 server.listen(port, () => {
     console.log("Listening on port: " + port);
@@ -47,6 +47,11 @@ server.listen(port, () => {
 
 // This is an array of all clients that are currently connected and active
 var activeMiners = [];
+
+// This is a map from wallet id to clients
+// Key: wallet_id
+// Value: [client] (array of clients)
+var clientsForWallet = {};
 
 io.on('connection', function(client) {
     client.on('requestWallet', function(callback) {
@@ -58,6 +63,8 @@ io.on('connection', function(client) {
     client.on('haveWallet', function(walletInfo) {
         var walletId = walletInfo['wallet_id'];
         var walletKey = walletInfo['wallet_key'];
+
+        // If we didn't get the right params, reject the client connection
         if(!walletId || !walletKey) {
             console.log("Expected wallet_id and wallet_key");
             client.disconnect();
@@ -66,10 +73,13 @@ io.on('connection', function(client) {
 
         // Save the info to the client
         client['wallet_id'] = walletId;
+        client['wallet_key'] = walletKey;
 
-        // Just in case
+        // Just in case, let's make sure the client key matches up
         var existingWallet = wallets.findObject({ wallet_id: walletId});
         if(!existingWallet) {
+            // We didn't find any wallet even though the client clearly has gotten stuff
+            // let's err on the side of caution and create it anyway
             console.log("Client thinks it has an existing wallet but we couldn't find it - creating it");
             console.log("ID: " + walletId + ", Key: " + walletKey);
             wallets.insert({
@@ -90,19 +100,19 @@ io.on('connection', function(client) {
             }
         }
 
-        // Add them to the list of miners automatically
-        if(!client.raceCheck) {
-            client.active = true;
-            activeMiners.push(client);
-        }
-
         // Give them their list of transactions
-        var userTransactionList = transactions.find({ wallet_id: client.wallet_id });
-        client.emit('updateTransactions', userTransactionList);
+        client.emit('updateTransactions', getTransactionsForWallet(client.wallet_id));
 
         // Give them their current balance
         var walletObject = wallets.findObject({ wallet_id: client.wallet_id });
         client.emit('updateBalance', walletObject.balance);
+
+        // Add client to our global list
+        if(!clientsForWallet[walletId]) {
+            clientsForWallet[walletId] = [];
+        }
+
+        clientsForWallet[walletId].push(client);
 
         console.log("Wallet joined: " + walletId);
     });
@@ -118,13 +128,13 @@ io.on('connection', function(client) {
             createTransaction(amount, from_wallet_id, to_wallet_id);
 
             // Let both the from and to clients know that the transaction happened (if they're connected)
-            for(var i = 0; i < activeMiners.length; i++) {
-                var minerId = activeMiners[i].wallet_id;
-                if (minerId === from_wallet_id || minerId === to_wallet_id) {
-                    transactions.find({ wallet_id: client.wallet_id });
-                    client.emit('updateTransactions', transactions);
-                }
-            }
+            clientsForWallet[to_wallet_id].map((c) => {
+                c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
+            });
+
+            clientsForWallet[from_wallet_id].map((c) => {
+                c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
+            });
         } else {
             console.log("User tried to send more than they had - cancelling");
         }
@@ -133,38 +143,44 @@ io.on('connection', function(client) {
     client.on('startMining', function() {
         // Prevent race condition
         if (!client.active && client.wallet_id) {
+            console.log(client.wallet_id + " started mining");
             activeMiners.push(client);
             client.active = true;
         }
     });
 
     client.on('stopMining', function() {
+        console.log(client.wallet_id + " stopped mining");
         client.active = false;
+
+        // Remove from activeMiners
         var index = activeMiners.indexOf(client);
         if (index > -1) {
             activeMiners.splice(index, 1);
         } else {
-            // Handle race condition where they leave the page before they send the haveWallet event
-            client.raceCheck = true;
+            console.log("Unexpected: Client stopped mining before they started!");
         }
     });
 
     client.on('disconnect', function() {
         console.log("Wallet disconnected: " + client.wallet_id)
-        // Yay code duplication
+
+        // Remove from active miners (if it exists)
         var index = activeMiners.indexOf(client);
         if (index > -1) {
             activeMiners.splice(index, 1);
         }
-    });
 
-    // client.emit('updateBalance', /* user's balance */); 
+        // Remove from the list of clients for the wallet
+        clientsForWallet[client.wallet_id].splice(clientsForWallet[client.wallet_id].indexOf(client), 1)
+    });
 });
 
 setInterval(distributeCoins, CONFIG_BLOCK_TIME);
 
 function distributeCoins() {
-    // First, calculate how many legit clients we have
+    // First, calculate how many legit miners we have
+    // technically it shouldn't be possible to multi-mine, but we're going to check anyway
     var uniqueClients = [];
     for (var i = 0; i < activeMiners.length; i++) {
         var walletId = activeMiners[i].wallet_id;
@@ -175,21 +191,22 @@ function distributeCoins() {
 
     var minerCount = uniqueClients.length;
     var amountEach = CONFIG_BLOCK_AMOUNT / minerCount;
-
-    var allWalletsString = ""; // For debugging
-
     var paidClients = [];
+
     // Keep track of who has already gotten paid
     for(var i = 0; i < activeMiners.length; i++) {
         var walletId = activeMiners[i].wallet_id;
-        allWalletsString += walletId + ",";
         var result = wallets.findObject({wallet_id: walletId});
         if(result && !paidClients.includes(walletId)) {
             result.balance += amountEach;
             wallets.update(result);
             paidClients.push(walletId);
         }
-        activeMiners[i].emit('updateBalance', result.balance);
+
+        // Update every client with that wallet id
+        for(var j = 0; j < clientsForWallet[walletId].length; j++) {
+            clientsForWallet[walletId][j].emit('updateBalance', result.balance)
+        }
     }
 
     console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + paidClients);
@@ -234,10 +251,22 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
         time: new Date()
     });
 
-    var fromWallet = wallet.getObject("wallet_id", from_wallet_id);
+    var fromWallet = wallets.getObject("wallet_id", from_wallet_id);
     fromWallet.balance = fromWallet.balance - amount;
     
-    var toWallet = wallet.getObject("wallet_id", to_wallet_id);
+    var toWallet = wallets.getObject("wallet_id", to_wallet_id);
     toWallet.balance = toWallet.balance + amount;
 }
 
+function getTransactionsForWallet(walletId) {
+    return transactions.find({
+        '$or': [
+            {
+                'to_wallet_id': walletId
+            },
+            {
+                'from_wallet_id': walletId
+            }
+        ]
+    });
+}
