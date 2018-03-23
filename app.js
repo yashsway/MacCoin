@@ -21,6 +21,7 @@ var firebaseDB = firebaseApp.database();
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
 var CONFIG_HEARTBEAT_TIMEOUT = 30000;
+var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci"];
 
 var wallets, transactions, blocks;
 var db = new Loki('database.json', {
@@ -68,7 +69,6 @@ var activeMiners = [];
 // Value: [client] (array of clients)
 var clientsForWallet = {};
 
-
 /*
     Telemetry
 */
@@ -81,11 +81,24 @@ setInterval(() => {
 }, TELEMETRY_INTERVAL);
 
 /*
+    Team stats
+*/
+var TEAM_STATS_INTERVAL = 5000; // 30s
+var teamStatsCache;
+setInterval(() => {
+    teamStatsCache = getTeamStats();
+    io.emit('teamStatsUpdate', teamStatsCache);
+}, TEAM_STATS_INTERVAL);
+
+
+/*
     Socket.io stuff
 */
 
 io.on('connection', function(client) {
     connectedClientsCount++;
+
+    client.emit('teamStatsUpdate', teamStatsCache);
 
     client.on('requestWallet', function(callback) {
         console.log("Wallet requested");
@@ -134,6 +147,7 @@ io.on('connection', function(client) {
         }
 
         // Give them their list of transactions
+        getTransactionsForWallet(client.wallet_id);
         client.emit('updateTransactions', getTransactionsForWallet(client.wallet_id));
 
         // Give them their current balance
@@ -191,6 +205,17 @@ io.on('connection', function(client) {
                 }
             }
         }, CONFIG_HEARTBEAT_TIMEOUT);
+    });
+
+    client.on('setTeam', function(team) {
+        // Team has to be part of the supported list
+        if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
+            return;
+        }
+
+        var walletRecord = wallets.find({ wallet_id: client.wallet_id});
+        walletRecord.team = team;
+        wallets.update(walletRecord);
     });
 
     client.on('startMining', function() {
@@ -316,7 +341,7 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
 }
 
 function getTransactionsForWallet(walletId) {
-    return transactions.find({
+    var txs = transactions.find({
         '$or': [
             {
                 'to_wallet_id': walletId
@@ -326,4 +351,24 @@ function getTransactionsForWallet(walletId) {
             }
         ]
     });
+
+    return txs;
+}
+
+function getTeamStats() {
+    var teamTotals = {};
+    for(var i = 0; i < CONFIG_SUPPORTED_TEAMS.length; i++) {
+        teamTotals[CONFIG_SUPPORTED_TEAMS[i]] = 0;
+    }
+    var allWallets = wallets.find();
+
+    console.log("Counting " + allWallets.length + "wallets");
+    for(var i = 0; i < allWallets.length; i++) {
+        var w = allWallets[i];
+        if(w.team) {
+            teamTotals[w.team] += w.balance;
+        }
+    }
+
+    return teamTotals;
 }
