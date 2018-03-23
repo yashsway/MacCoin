@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, FormControl, ControlLabel } from 'react-bootstrap';
 import Popup from "reactjs-popup";
+import moment from 'moment';
 
 import Nav from './Nav';
 import { Connection } from '../utils/connection.js'
@@ -16,7 +17,8 @@ class Wallet extends Component {
       walletID: '',
       sendAmount: '',
       recieverID: '',
-      teamValue: ''
+      teamValue: '',
+      transactions: []
     };
     this.updateState = this.updateState.bind(this);
   }
@@ -31,7 +33,7 @@ class Wallet extends Component {
 
   updateState(state) {
     console.log(state);
-    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, teamValue: state.teamValue});
+    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, teamValue: state.teamValue, transactions: state.transactions});
   }
 
   sendTransaction() {
@@ -52,8 +54,8 @@ class Wallet extends Component {
   }
 
   render() {
-    const { sendAmount, recieverID, walletID, balance, teamValue} = this.state;
-
+    const { sendAmount, recieverID, walletID, balance, teamValue, transactions} = this.state;
+console.log(transactions);
     return (
       <div className='wallet-page'>
         <Nav current='wallet'/>
@@ -115,12 +117,9 @@ class Wallet extends Component {
 
         <p className='center small-heading wallet-header'>Transaction History:</p>
         <div className='center transactions-container'>
-          <div className='info-box'>Recieved 400m from kda29 on Friday, March 23, 3:00pm</div>
-          <div className='info-box'>Sent 40m to kda29 on Friday, March 23, 3:00pm</div>
-          <div className='info-box'>Recieved 400m from kjnf29 on Friday, March 23, 3:00pm</div>
-          <div className='info-box'>Recieved 400m from kda29 on Friday, March 23, 3:00pm</div>
-          <div className='info-box'>Sent 40m to kda29 on Friday, March 23, 3:00pm</div>
-          <div className='info-box'>Recieved 400m from kjnf29 on Friday, March 23, 3:00pm</div>
+          { transactions.map((t) => {
+            return <div className='info-box'>Recieved {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+          })}
         </div>
       </div>
     );
