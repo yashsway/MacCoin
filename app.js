@@ -21,7 +21,7 @@ var firebaseDB = firebaseApp.database();
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
 var CONFIG_HEARTBEAT_TIMEOUT = 30000;
-var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci","none"];
+var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci"];
 
 
 var wallets, transactions, blocks;
