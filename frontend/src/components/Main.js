@@ -31,16 +31,18 @@ class Main extends Component {
 
   updateState(state) {
     var teamStats = state.teamStats;
-    var newData = [];
-    Object.keys(teamStats).map( (key, i) => {
-      newData.push({
-        "x": key,
-        "y": teamStats[key],
-        "color": this.colors[i]
-      })
-    });
-    console.log(newData);
-    this.setState({graphData: newData});
+    if (teamStats) {
+      var newData = [];
+      Object.keys(teamStats).map( (key, i) => {
+        newData.push({
+          "x": key,
+          "y": teamStats[key],
+          "color": this.colors[i]
+        })
+      });
+      console.log(newData);
+      this.setState({graphData: newData});
+    }
 
   }
 
