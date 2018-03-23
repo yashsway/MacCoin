@@ -1,0 +1,93 @@
+$phone-width: 480px;
+$tablet-width: 768px;
+$desktop-width: 992px;
+$large-desktop-width: 1200px;
+$phone-max-width: 48em;
+$tablet-max-width: 63.9375em;
+$desktop-min-width: 64em;
+$desktop-max-width: 74.9375em;
+
+/* Small only */
+@mixin small-only {
+    @media screen and (max-width:#{$phone-max-width}) {
+        @content;
+    }
+}
+/* Medium up */
+@mixin medium-up {
+    @media screen and (min-width:#{$phone-max-width}) {
+        @content;
+    }
+}
+/* Medium only */
+@mixin medium-only {
+    @media screen and (min-width: #{$phone-max-width}) and (max-width: #{$tablet-max-width}) {
+        @content;
+    }
+}
+/* Large and up */
+@mixin desktop-up {
+    @media screen and (min-width: #{$desktop-min-width}) {
+    }
+}
+@mixin large-desktop-up {
+    @media only screen and (min-width: #{$large-desktop-width}) {
+        @content;
+    }
+}
+
+/* Clearfix Hack */
+.clearfix:before,
+.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+.clearfix {
+    zoom: 1;
+}
+/* centering hack */
+.content {
+    margin: 0px auto;
+    display: table;
+}
+.h100 {
+    height: 100%;
+}
+/* Link clear defaults
+-------------------*/
+a {
+    text-decoration: none;
+    outline: none;
+}
+a:focus, a:hover {
+    outline: none;
+}
+a:active {
+    outline: 0;
+}
+a:visited {
+    outline: 0;
+}
+a {
+    color: inherit;
+    &:hover {
+        color: inherit;
+    }
+    &:active,
+    &:focus {
+        color: inherit;
+    }
+}
+/* alignment */
+.fl-right {
+    float: right;
+}
+.center {
+  display: flex;
+  justify-content: center;
+}

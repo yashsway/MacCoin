@@ -1,48 +1,64 @@
 @import "variables";
 
 .wallet-page {
-  display: flex;
-  flex-direction: column;
+  color: $contrast-dark-2-color;
+  & > .header-section {
 
-  .wallet-header {
-    margin-top: $primary-spacing * 5;
   }
+  & > .main-section {
 
-  .info-box {
-    padding: $primary-spacing * 2;
-    border: 1px solid $text-colour;
-    text-align: center;
   }
+  & > .transaction-section {
 
-  .transactions-container {
-    flex-direction: column;
-    width: 80%;
-    margin: 0 auto;
   }
-
-  @media (max-width: 768px) {
-    .wallet-info {
-      flex-direction: column;
-      width: 80%;
-      margin: 0 auto;
-    }
+  & > .footer-section {
+    
   }
 
   .btn-question {
     width: 30px;
     height: 30px;
-    margin-bottom: $primary-spacing;
-    margin-left: $primary-spacing;
+    margin-bottom: $spacing-large;
+    margin-left: $spacing-large;
   }
 
   .faculty-form {
     width: 40%;
     margin: 0 auto;
-    margin-top: $primary-spacing;
+    margin-top: $spacing-large;
   }
 }
 
-.popup-content {
-  color: black;
-  padding: $primary-spacing*2 !important;
-}
+// .wallet-page {
+//   display: flex;
+//   flex-direction: column;
+
+//   .wallet-header {
+//     margin-top: $spacing-large * 5;
+//   }
+
+  .info-box {
+    padding: $spacing-large * 2;
+    border: 1px solid $text-color;
+    text-align: center;
+  }
+
+//   .transactions-container {
+//     flex-direction: column;
+//     width: 80%;
+//     margin: 0 auto;
+//   }
+
+//   @media (max-width: 768px) {
+//     .wallet-info {
+//       flex-direction: column;
+//       width: 80%;
+//       margin: 0 auto;
+//     }
+//   }
+// }
+
+// .popup-content {
+//   color: black;
+//   padding: $spacing-large*2 !important;
+// }
