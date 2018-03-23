@@ -179,12 +179,12 @@ io.on('connection', function(client) {
             // Let both the from and to clients know that the transaction happened (if they're connected)
             clientsForWallet[to_wallet_id].map((c) => {
                 c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
-                c.emit('updateBalance', toBalance);
+                c.emit('updateBalance', newBalances.toBalance);
             });
 
             clientsForWallet[from_wallet_id].map((c) => {
                 c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
-                c.emit('updateBalance', fromBalance);
+                c.emit('updateBalance', newBalances.fromBalance);
             });
         } else {
             console.log("User tried to send more than they had - cancelling");
