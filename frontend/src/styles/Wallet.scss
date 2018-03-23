@@ -39,6 +39,7 @@
 }
 
 .info-box {
+  @extend .mv2;
   padding: $spacing-large * 2;
   border: 1px solid $text-color;
   text-align: center;

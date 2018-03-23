@@ -62,7 +62,7 @@ server.listen(port, () => {
 });
 
 function DBInitFinished() {
-
+    
 // This is used by the socket io heartbeat
 var hbeat = {};
 
@@ -176,6 +176,8 @@ io.on('connection', function(client) {
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
         var amount = transaction.amount;
+
+        if (isNaN(amount) || amount<0) return;
         if (!(from_wallet_id && from_wallet_key && to_wallet_id && amount)) return;
 
         var senderWallet = wallets.findObject({wallet_id: from_wallet_id});
@@ -350,12 +352,12 @@ function createWallet() {
     return {wallet_id: id, wallet_key: key};
 }
 
-function createTransaction(amount, from_wallet_id, to_wallet_id) {
+function createTransaction(amount, from_wallet_id, to_wallet_id,time=new Date()) {
     transactions.insert({
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
         amount: amount,
-        time: new Date()
+        time: time
     });
 
     var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
