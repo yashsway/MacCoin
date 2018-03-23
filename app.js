@@ -92,16 +92,33 @@ io.on('connection', function(client) {
             activeMiners.push(client);
         }
 
+        // Give them their list of transactions
+        transactions.find({ wallet_id: client.wallet_id });
+        client.emit('updateTransactions', transactions);
+
         console.log("Wallet joined: " + walletId);
     });
 
-    client.on('send', function(amount, from_wallet_key, from_wallet_id, to_wallet_id) {
-        var senderWallet = wallets.by("name", from_wallet_id);
+    client.on('send', function(transaction) {
+        var from_wallet_id = transaction.from_wallet_id;
+        var from_wallet_key = transaction.from_wallet_key;
+        var to_wallet_id = transaction.to_wallet_id;
+
+        var senderWallet = wallets.getObject("wallet_id", from_wallet_id);
+
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             createTransaction(amount, from_wallet_id, to_wallet_id);
-            // update view
+
+            // Let both the from and to clients know that the transaction happened (if they're connected)
+            for(var i = 0; i < activeMiners.length; i++) {
+                var minerId = activeMiners[i].wallet_id;
+                if (minerId === from_wallet_id || minerId === to_wallet_id) {
+                    transactions.find({ wallet_id: client.wallet_id });
+                    client.emit('updateTransactions', transactions);
+                }
+            }
         } else {
-            // error? idk
+            console.log("User tried to send more than they had - cancelling");
         }
     });
 
@@ -197,10 +214,10 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
         time: new Date()
     });
 
-    var fromWallet = wallet.by("wallet_id", from_wallet_id);
+    var fromWallet = wallet.getObject("wallet_id", from_wallet_id);
     fromWallet.balance = fromWallet.balance - amount;
     
-    var toWallet = wallet.vby("wallet_id", to_wallet_id);
-    toWallet.balance = toWallet.blaance + amount;
+    var toWallet = wallet.getObject("wallet_id", to_wallet_id);
+    toWallet.balance = toWallet.balance + amount;
 }
 
