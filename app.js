@@ -165,27 +165,35 @@ io.on('connection', function(client) {
     });
 
     client.on('send', function(transaction) {
-        console.log(transaction);
         var from_wallet_id = transaction.from_wallet_id;
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
         var amount = transaction.amount;
 
         var senderWallet = wallets.findObject({"wallet_id": from_wallet_id});
+        var receiverWallet = wallets.findObject({wallet_id: to_wallet_id});
+
+        if(!senderWallet || !receiverWallet) return;
 
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             var newBalances = createTransaction(amount, from_wallet_id, to_wallet_id);
             
             // Let both the from and to clients know that the transaction happened (if they're connected)
-            clientsForWallet[to_wallet_id].map((c) => {
-                c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
-                c.emit('updateBalance', toBalance);
-            });
+            if(clientsForWallet[to_wallet_id]) {
+                clientsForWallet[to_wallet_id].map((c) => {
+                    c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
+                    c.emit('updateBalance', newBalances.toBalance);
+                });
+            }
 
-            clientsForWallet[from_wallet_id].map((c) => {
-                c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
-                c.emit('updateBalance', fromBalance);
-            });
+            if(clientsForWallet[from_wallet_id]) {
+                clientsForWallet[from_wallet_id].map((c) => {
+                    c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
+                    c.emit('updateBalance', newBalances.fromBalance);
+                });
+            }
+
+            console.log("Sent " + amount + " from " + from_wallet_id + " to " + to_wallet_id);
         } else {
             console.log("User tried to send more than they had - cancelling");
         }
@@ -279,7 +287,7 @@ function distributeCoins() {
         var walletId = activeMiners[i].wallet_id;
         var result = wallets.findObject({wallet_id: walletId});
         if(result && !paidClients.includes(walletId)) {
-            result.balance += amountEach;
+            result.balance = parseFloat(result.balance) + parseFloat(amountEach);
             wallets.update(result);
             paidClients.push(walletId);
         }
@@ -331,15 +339,15 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
         time: new Date()
     });
 
-    console.log("Transaction created");
-
     var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
     fromWallet.balance = parseFloat(fromWallet.balance) - parseFloat(amount);
     
     var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
     toWallet.balance = parseFloat(toWallet.balance) + parseFloat(amount);
 
-    return {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
+    var newBalances = {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
+
+    return newBalances;
 }
 
 function getTransactionsForWallet(walletId) {
@@ -364,7 +372,7 @@ function getTeamStats() {
     }
     var allWallets = wallets.find();
 
-    console.log("Counting " + allWallets.length + "wallets");
+    console.log("Counting " + allWallets.length + " wallets");
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
         if(w.team) {
