@@ -11,25 +11,12 @@ import openSocket from 'socket.io-client';
 class Mining extends Component {
   constructor(props) {
     super(props);
+    this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.state = {
     };
   }
 
   componentDidMount() {
-
-    // Visibility event listener for activating/deactivating mining
-    var hidden, visibilityChange; 
-    if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
-      hidden = "hidden";
-      visibilityChange = "visibilitychange";
-    } else if (typeof document.msHidden !== "undefined") {
-      hidden = "msHidden";
-      visibilityChange = "msvisibilitychange";
-    } else if (typeof document.webkitHidden !== "undefined") {
-      hidden = "webkitHidden";
-      visibilityChange = "webkitvisibilitychange";
-    }
-    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
 
     // Connect to server
     var port = process.env.NODE_ENV === "production" ? 80 : 3001;
@@ -51,13 +38,30 @@ class Mining extends Component {
       console.log("Already have wallet: " + window.localStorage.getItem('wallet_id'));
       this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
     }
+
+    // Visibility event listener for activating/deactivating mining
+    var hidden, visibilityChange; 
+    if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+      hidden = "hidden";
+      visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+      hidden = "msHidden";
+      visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+      hidden = "webkitHidden";
+      visibilityChange = "webkitvisibilitychange";
+    }
+    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+
   }
 
   handleVisibilityChange() {
-    if (document["hidden"]) {
-      this.socket.emit('stopMining');
-    } else {
-      this.socket.emit('startMining');
+    if (this.socket){
+      if (document["hidden"]) {
+        this.socket.emit('stopMining');
+      } else {
+        this.socket.emit('startMining');
+      }
     }
   }
 
