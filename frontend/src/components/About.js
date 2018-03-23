@@ -28,6 +28,7 @@ const About = () => (
           <p>The BLOCKCHAIN: The BLOCKCHAIN is where the actual cryptocurrency is stored. Using the power of C-R-Y-P-T-O-G-R-A-P-H-Y and M-A-T-H-E-M-A-T-I-C-S, your valueless coinage will in this case continue to be valueless, because we don’t have a real BLOCKCHAIN! You can probably ignore this whole entry! Haha!</p>
           <p>That’s all you need to know about MacCoin! So keep this page open and make $€£¥!</p>
           <p>Disclaimer: There is no monetary value associated with MacCoin. Unless someone buys some off of you, in which case I was never here if the CRA comes around.</p>
+          <p>Send us fan mail at mcmastercoin@gmail.com</p>
           </div>
       </div>
     </div>
