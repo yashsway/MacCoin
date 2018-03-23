@@ -27,8 +27,6 @@ var db = new Loki('database.json', {
         if(blocks === null) {
             blocks = db.addCollection('blocks');
         }
-
-        wallets.insert({"niko": "isgreat"});
     },
     autosave: true,
     autosaveInterval: 4000,
@@ -57,15 +55,43 @@ io.on('connection', function(client) {
         callback(wallet);
     });
 
-    client.on('haveWallet', function(id) {
-        client['wallet_id'] = id;
-        console.log("Existing wallet: "+client['wallet_id']);
+    client.on('haveWallet', function(walletInfo) {
+        var walletId = walletInfo['wallet_id'];
+        var walletKey = walletInfo['wallet_key'];
+        if(!walletId || !walletKey) {
+            client.disconnect();
+            return;
+        }
+
+        // Save the info to the client
+        client['wallet_id'] = walletId;
+
+        // Just in case
+        var existingWallet = wallets.findObject({ wallet_id: walletId});
+        if(!existingWallet) {
+            console.log("Client thinks it has an existing wallet but we couldn't find it - creating it");
+            wallets.insert({
+                // Need to generate the ids and keys
+                wallet_id: walletId,
+                wallet_key: walletKey,
+                balance: 0,
+                created: new Date()
+            });
+        } else {
+            // Sanity check that the key is the same
+            if (existingWallet.wallet_key !== walletKey) {
+                console.log("This shouldn't happen - existing wallet exists with mismatching key");
+                client.disconnect(); // Don't fuck us up anymore
+            }
+        }
 
         // Add them to the list of miners automatically
         if(!client.raceCheck) {
             client.active = true;
             activeMiners.push(client);
         }
+
+        console.log("Wallet joined: " + walletId);
     });
 
     client.on('send', function(amount, from_wallet_key, from_wallet_id, to_wallet_id) {
@@ -118,7 +144,11 @@ function distributeCoins() {
     for(var i = 0; i < activeMiners.length; i++) {
         var walletId = activeMiners[i].wallet_id;
         allWalletsString += walletId + ",";
-        var result = wallets.find({wallet_id: walletId});
+        var result = wallets.findObject({wallet_id: walletId});
+        if(result) {
+            result.balance += amountEach;
+            wallets.update(result);
+        }
     }
 
     console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + allWalletsString);
