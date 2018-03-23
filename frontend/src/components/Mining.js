@@ -62,8 +62,12 @@ class Mining extends Component {
 
         this.setState({walletID: id});
       }
-      // Bind visibility event listener
-      document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+      window.onblur = () => {
+        this.socket.emit('stopMining');
+      };
+      window.onfocus = () => {
+        this.socket.emit('startMining');
+      };
     });
 
     this.socket.on('updateBalance', (newBalance) => {
