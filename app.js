@@ -101,20 +101,21 @@ io.on('connection', function(client) {
     client.emit('teamStatsUpdate', teamStatsCache);
 
     client.on('requestWallet', function(callback) {
+        // Validate input
+        if (typeof callback !== "function") return;
         console.log("Wallet requested");
         var wallet = createWallet();
         callback(wallet);
     });
 
     client.on('haveWallet', function(walletInfo) {
+        if (typeof walletInfo !== "object") return;
         var walletId = walletInfo['wallet_id'];
         var walletKey = walletInfo['wallet_key'];
 
         // If we didn't get the right params, reject the client connection
         if(!walletId || !walletKey) {
-            console.log("Expected wallet_id and wallet_key");
-            client.disconnect();
-            return;
+            return { err: "Expected wallet_id and wallet_key" };
         }
 
         // Save the info to the client
@@ -148,36 +149,39 @@ io.on('connection', function(client) {
         }
 
         // Give them their list of transactions
-        getTransactionsForWallet(client.wallet_id);
         client.emit('updateTransactions', getTransactionsForWallet(client.wallet_id));
 
         // Give them their current balance
         var walletObject = wallets.findObject({ wallet_id: client.wallet_id });
-        client.emit('updateBalance', walletObject.balance);
+        if(walletObject) {
+            client.emit('updateBalance', walletObject.balance);
+        }
 
         // Add client to our global list
         if(!clientsForWallet[walletId]) {
             clientsForWallet[walletId] = [];
         }
-
         clientsForWallet[walletId].push(client);
 
         console.log("Wallet joined: " + walletId);
     });
 
     client.on('send', function(transaction) {
+        if (typeof transaction !== "object") return;
         var from_wallet_id = transaction.from_wallet_id;
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
         var amount = transaction.amount;
+        if (!(from_wallet_id && from_wallet_key && to_wallet_id && amount)) return;
 
-        var senderWallet = wallets.findObject({"wallet_id": from_wallet_id});
+        var senderWallet = wallets.findObject({wallet_id: from_wallet_id});
         var receiverWallet = wallets.findObject({wallet_id: to_wallet_id});
 
         if(!senderWallet || !receiverWallet) return;
 
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             var newBalances = createTransaction(amount, from_wallet_id, to_wallet_id);
+            if (!newBalances) return;
             
             // Let both the from and to clients know that the transaction happened (if they're connected)
             if(clientsForWallet[to_wallet_id]) {
@@ -195,8 +199,6 @@ io.on('connection', function(client) {
             }
 
             console.log("Sent " + amount + " from " + from_wallet_id + " to " + to_wallet_id);
-        } else {
-            console.log("User tried to send more than they had - cancelling");
         }
     });
 
@@ -219,12 +221,14 @@ io.on('connection', function(client) {
     });
 
     client.on('setTeam', function(team) {
+        if (typeof team !== "string") return;
         // Team has to be part of the supported list
         if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
             return;
         }
 
         var walletRecord = wallets.find({ wallet_id: client.wallet_id});
+        if(!walletRecord) return;
         walletRecord.team = team;
         wallets.update(walletRecord);
 
@@ -264,7 +268,13 @@ io.on('connection', function(client) {
         }
 
         // Remove from the list of clients for the wallet
-        clientsForWallet[client.wallet_id].splice(clientsForWallet[client.wallet_id].indexOf(client), 1);
+        var walletClients = clientsForWallet[client.wallet_id];
+        if(walletClients) {
+            var index = clientsForWallet[client.wallet_id].indexOf(client);
+            if (index > -1) {
+                clientsForWallet[client.wallet_id].splice(index , 1);
+            }
+        }
     });
 });
 
@@ -296,8 +306,10 @@ function distributeCoins() {
         }
 
         // Update every client with that wallet id
-        for(var j = 0; j < clientsForWallet[walletId].length; j++) {
-            clientsForWallet[walletId][j].emit('updateBalance', result.balance)
+        if(clientsForWallet[walletId]) {
+            for(var j = 0; j < clientsForWallet[walletId].length; j++) {
+                clientsForWallet[walletId][j].emit('updateBalance', result.balance)
+            }
         }
     }
 
@@ -335,7 +347,7 @@ function createWallet() {
     return {wallet_id: id, wallet_key: key};
 }
 
-function createTransaction(amount, from_wallet_id, to_wallet_id,) {
+function createTransaction(amount, from_wallet_id, to_wallet_id) {
     transactions.insert({
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
@@ -344,9 +356,11 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     });
 
     var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
+    if(!fromWallet) return;
     fromWallet.balance = parseFloat(fromWallet.balance) - parseFloat(amount);
     
     var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
+    if(!toWallet) return;
     toWallet.balance = parseFloat(toWallet.balance) + parseFloat(amount);
 
     var newBalances = {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
@@ -379,7 +393,7 @@ function getTeamStats() {
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
         if(w.team) {
-            teamTotals[w.team] += w.balance;
+            teamTotals[w.team] += parseFloat(w.balance);
         }
     }
 
