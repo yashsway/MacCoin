@@ -71,6 +71,7 @@ io.on('connection', function(client) {
         var existingWallet = wallets.findObject({ wallet_id: walletId});
         if(!existingWallet) {
             console.log("Client thinks it has an existing wallet but we couldn't find it - creating it");
+            console.log("ID: " + walletId + ", Key: " + walletKey);
             wallets.insert({
                 // Need to generate the ids and keys
                 wallet_id: walletId,
@@ -82,6 +83,9 @@ io.on('connection', function(client) {
             // Sanity check that the key is the same
             if (existingWallet.wallet_key !== walletKey) {
                 console.log("This shouldn't happen - existing wallet exists with mismatching key");
+                console.log("Expected: " + existingWallet.wallet_key);
+                console.log("Got: " + walletKey);
+                console.log(existingWallet);
                 client.disconnect(); // Don't fuck us up anymore
             }
         }
@@ -156,23 +160,35 @@ io.on('connection', function(client) {
 setInterval(distributeCoins, CONFIG_BLOCK_TIME);
 
 function distributeCoins() {
-    var minerCount = activeMiners.length;
+    // First, calculate how many legit clients we have
+    var uniqueClients = [];
+    for (var i = 0; i < activeMiners.length; i++) {
+        var walletId = activeMiners[i].wallet_id;
+        if(!uniqueClients.includes(walletId)) {
+            uniqueClients.push(walletId);
+        }
+    }
+
+    var minerCount = uniqueClients.length;
     var amountEach = CONFIG_BLOCK_AMOUNT / minerCount;
 
     var allWalletsString = ""; // For debugging
+
+    var paidClients = [];
+    // Keep track of who has already gotten paid
     for(var i = 0; i < activeMiners.length; i++) {
         var walletId = activeMiners[i].wallet_id;
         allWalletsString += walletId + ",";
         var result = wallets.findObject({wallet_id: walletId});
-        if(result) {
+        if(result && !paidClients.includes(walletId)) {
             result.balance += amountEach;
             wallets.update(result);
+            paidClients.push(walletId);
         }
-
         activeMiners[i].emit('updateBalance', result.balance);
     }
 
-    console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + allWalletsString);
+    console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + paidClients);
 
 }
 
