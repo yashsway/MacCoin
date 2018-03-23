@@ -47,14 +47,15 @@ var subscribe = (name, subscriber) => {
             if (wallet === undefined || wallet === null || wallet.length === 0) {
                 console.log("Requesting wallet");
                 socket.emit('requestWallet', (walletData) => {
-                console.log("Got wallet!");
-                console.log(walletData);
-                window.localStorage.setItem('wallet_id', walletData['wallet_id']);
-                window.localStorage.setItem('wallet_key', walletData['wallet_key']);
-                console.log(walletData['team']);
-                socket.emit('haveWallet', walletData);
-                setState('wallet_id', walletData['wallet_id']);
-                setState('teamValue', window.localStorage.getItem('team'));
+                    console.log("Got wallet!");
+                    console.log(walletData);
+                    window.localStorage.setItem('wallet_id', walletData['wallet_id']);
+                    window.localStorage.setItem('wallet_key', walletData['wallet_key']);
+                    console.log(walletData['team']);
+                    socket.emit('haveWallet', walletData);
+                    setState('wallet_id', walletData['wallet_id']);
+                    setState('teamValue', window.localStorage.getItem('team'));
+                    subscriber(state);
                 });
             } else { // Otherwise, let the server know who you are
                 var id = window.localStorage.getItem('wallet_id');
@@ -64,6 +65,7 @@ var subscribe = (name, subscriber) => {
                 socket.emit('haveWallet', {"wallet_id": id, "wallet_key": key});
                 setState('wallet_id', id);
                 setState('teamValue', team);
+                subscriber(state);
             }
 
             // SOCKET EVENT LISTENERS
@@ -77,7 +79,6 @@ var subscribe = (name, subscriber) => {
                 setState('transactions', newTransactions);
             });
         })
-        subscriber(state);
     } else {
      //Now that we're set up, send the state to the subscriber
      subscriber(state);

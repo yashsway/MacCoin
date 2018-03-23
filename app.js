@@ -376,7 +376,6 @@ function getTeamStats() {
     }
     var allWallets = wallets.find();
 
-    console.log("Counting " + allWallets.length + " wallets");
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
         if(w.team) {
