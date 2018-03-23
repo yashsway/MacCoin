@@ -17,7 +17,8 @@ class Mining extends Component {
 
   componentDidMount() {
     // Connect to server
-    this.socket = openSocket('http://localhost:3001');
+    var port = process.env.NODE_ENV === "production" ? 80 : 3001;
+    this.socket = openSocket('http://localhost:'+port);
     console.log("Connected to server");
     // Does this machine have a wallet already?
     var wallet = window.localStorage.getItem('wallet_id');
