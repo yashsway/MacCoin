@@ -7,7 +7,8 @@ var state = {
     balance: 0,
     wallet_id: '',
     transactions: [],
-    teamValue: ''
+    team: '',
+    teamStats: []
 };
 
 var setState = (key, value) => {
@@ -78,6 +79,11 @@ var subscribe = (name, subscriber) => {
                 console.log('update transactions!');
                 setState('transactions', newTransactions);
             });
+
+            socket.on('teamStatsUpdate', (teamStats) => {
+                console.log('update team stats');
+                setState('teamStats', teamStats);
+            })
         })
     } else {
      //Now that we're set up, send the state to the subscriber
@@ -85,7 +91,7 @@ var subscribe = (name, subscriber) => {
     }
 }
 
-var Connection = {subscribe, unsubscribe, emit};
+var Connection = {subscribe, unsubscribe, emit, setState};
 
 export {Connection};
 

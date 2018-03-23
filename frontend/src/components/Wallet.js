@@ -17,7 +17,7 @@ class Wallet extends Component {
       walletID: '',
       sendAmount: '',
       recieverID: '',
-      teamValue: '',
+      team: '',
       transactions: []
     };
     this.updateState = this.updateState.bind(this);
@@ -32,8 +32,7 @@ class Wallet extends Component {
   }
 
   updateState(state) {
-    console.log(state);
-    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, teamValue: state.teamValue, transactions: state.transactions});
+    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, team: state.team, transactions: state.transactions});
   }
 
   sendTransaction() {
@@ -48,13 +47,15 @@ class Wallet extends Component {
     Connection.emit('send', params)
   }
 
-  updateTeam(team) {
-    this.setState({teamValue: team});
-    window.localStorage.setItem('team', team);
+  updateTeam(teamName) {
+    console.log("set team");
+    Connection.setState('team', teamName);
+    Connection.emit('setTeam', teamName);
+    window.localStorage.setItem('team', teamName);
   }
 
   render() {
-    const { sendAmount, recieverID, walletID, balance, teamValue, transactions} = this.state;
+    const { sendAmount, recieverID, walletID, balance, team, transactions} = this.state;
 
     return (
       <div className='wallet-page'>
@@ -105,7 +106,7 @@ class Wallet extends Component {
           <FormControl
             type='select'
             componentClass='select'
-            value={teamValue}
+            value={team}
             onChange={(event) => this.updateTeam(event.target.value)}>
             <option value=''>Select a team</option>
             <option value='engineering'>Engineering</option>

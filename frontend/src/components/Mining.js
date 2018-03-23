@@ -42,8 +42,8 @@ class Mining extends Component {
   updateState(state) {
     if (!this.initalized && document.hasFocus()){
       this.startMining();
-      this.initalized = true;
     }
+    this.initalized = true;
     console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
   }
