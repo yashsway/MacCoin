@@ -41,7 +41,7 @@ var subscribe = (name, subscriber) => {
                 socket.emit('requestWallet', (walletData) => {
                 console.log("Got wallet!");
                 console.log(walletData);
-                window.localStorage.setItem('wallet_data', walletData['wallet_id']);
+                window.localStorage.setItem('wallet_id', walletData['wallet_id']);
                 window.localStorage.setItem('wallet_key', walletData['wallet_key'])
                 socket.emit('haveWallet', walletData);
                 setState('wallet_id', walletData['wallet_id']);
