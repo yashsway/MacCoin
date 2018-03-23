@@ -334,10 +334,10 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     console.log("Transaction created");
 
     var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
-    fromWallet.balance = fromWallet.balance - amount;
+    fromWallet.balance = parseFloat(fromWallet.balance) - parseFloat(amount);
     
     var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
-    toWallet.balance = toWallet.balance + amount;
+    toWallet.balance = parseFloat(toWallet.balance) + parseFloat(amount);
 
     return {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
 }
