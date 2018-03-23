@@ -15,6 +15,10 @@ var setState = (key, value) => {
     })
 };
 
+var emit = (event, parameters) => {
+    socket.emit(event);
+}
+
 var unsubscribe = (name) => {
     delete subscribers[name];
 }
@@ -58,7 +62,7 @@ var subscribe = (name, subscriber) => {
     }
 }
 
-var Connection = {subscribe, unsubscribe};
+var Connection = {subscribe, unsubscribe, emit};
 
 export {Connection};
 

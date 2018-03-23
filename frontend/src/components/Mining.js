@@ -6,19 +6,26 @@ import Nav from './Nav';
 import { Connection } from '../utils/connection.js'
 
 import '../styles/Mining.css';
+import { createConnection } from 'net';
 
 class Mining extends Component {
   constructor(props) {
     super(props);
     this.state = {
       balance: 0,
-      walletID: ''
+      walletID: '-'
     };
     this.updateState = this.updateState.bind(this);
   }
 
   componentDidMount() {
     Connection.subscribe("mining", this.updateState);
+    window.onblur = () => {
+      Connection.emit('stopMining');
+    };
+    window.onfocus = () => {
+      Connection.emit('startMining');
+    };
   }
 
   componentWillUnmount() {
@@ -41,7 +48,7 @@ class Mining extends Component {
           <div className='center'>
             <img className='mining-gif' src='https://media.giphy.com/media/cnCnU42hrY0Ew/giphy.gif'></img>
           </div>
-          <p className='center small-heading'>Balance: {balance}m</p>
+          <p className='center small-heading'>Balance: {balance == 0 ? '-' : balance + 'm'}</p>
           <p className='center small-heading'>Wallet ID: {walletID}</p>
         </div>
         <div className='center'>
