@@ -41,6 +41,8 @@ var db = new Loki('database.json', {
         if(blocks === null) {
             blocks = db.addCollection('blocks');
         }
+
+        DBInitFinished();
     },
     autosave: true,
     autosaveInterval: 3500,
@@ -57,6 +59,8 @@ var port = process.env.PORT || 80;
 server.listen(port, () => {
     console.log("Listening on port: " + port);
 });
+
+function DBInitFinished() {
 
 // This is used by the socket io heartbeat
 var hbeat = {};
@@ -398,4 +402,5 @@ function getTeamStats() {
     }
 
     return teamTotals;
+}
 }
