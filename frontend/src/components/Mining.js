@@ -11,13 +11,16 @@ import openSocket from 'socket.io-client';
 class Mining extends Component {
   constructor(props) {
     super(props);
+    this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.state = {
     };
   }
 
   componentDidMount() {
+
     // Connect to server
-    this.socket = openSocket('http://localhost:3001');
+    var port = process.env.NODE_ENV === "production" ? 80 : 3001;
+    this.socket = openSocket('http://localhost:'+port);
     console.log("Connected to server");
     // Does this machine have a wallet already?
     var wallet = window.localStorage.getItem('wallet_id');
@@ -29,13 +32,38 @@ class Mining extends Component {
         console.log(walletData);
         window.localStorage.setItem('wallet_id', walletData['wallet_id']);
         window.localStorage.setItem('wallet_key', walletData['wallet_key'])
+        this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
       });
     } else { // Otherwise, let the server know who you are
       console.log("Already have wallet: " + window.localStorage.getItem('wallet_id'));
       this.socket.emit('haveWallet', window.localStorage.getItem('wallet_id'));
     }
+
+    // Visibility event listener for activating/deactivating mining
+    var hidden, visibilityChange; 
+    if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+      hidden = "hidden";
+      visibilityChange = "visibilitychange";
+    } else if (typeof document.msHidden !== "undefined") {
+      hidden = "msHidden";
+      visibilityChange = "msvisibilitychange";
+    } else if (typeof document.webkitHidden !== "undefined") {
+      hidden = "webkitHidden";
+      visibilityChange = "webkitvisibilitychange";
+    }
+    document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
+
   }
 
+  handleVisibilityChange() {
+    if (this.socket){
+      if (document["hidden"]) {
+        this.socket.emit('stopMining');
+      } else {
+        this.socket.emit('startMining');
+      }
+    }
+  }
 
   render() {
 
