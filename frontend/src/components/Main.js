@@ -42,13 +42,14 @@ class Main extends Component {
     if (teamStats) {
       var newData = [];
       Object.keys(teamStats).map( (key, i) => {
-        newData.push({
-          "x": key,
-          "y": teamStats[key],
-          "color": this.colors[i]
-        })
+        if (key != "none"){
+          newData.push({
+            "x": key,
+            "y": teamStats[key],
+            "color": this.colors[i]
+          })
+        }
       });
-      console.log(newData);
       this.setState({graphData: newData});
     }
 
