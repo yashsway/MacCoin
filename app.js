@@ -97,8 +97,12 @@ io.on('connection', function(client) {
         }
 
         // Give them their list of transactions
-        transactions.find({ wallet_id: client.wallet_id });
-        client.emit('updateTransactions', transactions);
+        var userTransactionList = transactions.find({ wallet_id: client.wallet_id });
+        client.emit('updateTransactions', userTransactionList);
+
+        // Give them their current balance
+        var walletObject = wallets.findObject({ wallet_id: client.wallet_id });
+        client.emit('updateBalance', walletObject.balance);
 
         console.log("Wallet joined: " + walletId);
     });
