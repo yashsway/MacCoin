@@ -37,13 +37,13 @@ class Mining extends Component {
     var port = process.env.NODE_ENV === "production" ? 80 : 3001;
     this.socket = openSocket('http://localhost:'+port);
     console.log("Connected to server");
-    this.socket.on('connect', function() {
+    this.socket.on('connect', ()=> {
       // Does this machine have a wallet already?
       var wallet = window.localStorage.getItem('wallet_id');
       // If not, get one!
       if (wallet === undefined || wallet === null || wallet.length === 0) {
         console.log("Requesting wallet");
-        this.socket.emit('requestWallet', function(walletData){
+        this.socket.emit('requestWallet', (walletData) => {
           console.log("Got wallet!");
           console.log(walletData);
           window.localStorage.setItem('wallet_data', walletData['wallet_id']);
@@ -56,7 +56,6 @@ class Mining extends Component {
         console.log("Already have wallet: " + id);
         this.socket.emit('haveWallet', {"wallet_id": id, "wallet_key": key});
       }
-
       // Bind visibility event listener
       document.addEventListener(visibilityChange, this.handleVisibilityChange, false);
     });

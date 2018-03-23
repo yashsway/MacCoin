@@ -59,6 +59,7 @@ io.on('connection', function(client) {
         var walletId = walletInfo['wallet_id'];
         var walletKey = walletInfo['wallet_key'];
         if(!walletId || !walletKey) {
+            console.log("Expected wallet_id and wallet_key");
             client.disconnect();
             return;
         }
@@ -124,6 +125,7 @@ io.on('connection', function(client) {
     });
 
     client.on('disconnect', function() {
+        console.log("Wallet disconnected: " + client.wallet_id)
         // Yay code duplication
         var index = activeMiners.indexOf(client);
         if (index > -1) {
