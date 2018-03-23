@@ -30,8 +30,13 @@ var subscribe = (name, subscriber) => {
     subscribers[name] = subscriber;
     // Connect to server
     if (socket === undefined) {
-        var port = process.env.NODE_ENV === "production" ? 80 : 3001;
-        socket = openSocket('http://localhost:'+port);
+        var socketUrl;
+        if(process.env.NODE_ENV === 'production') {
+            socketUrl = 'http://' + window.location.host;
+        } else {
+            socketUrl = 'http://localhost:' + 3001;
+        }
+        socket = openSocket(socketUrl);
         socket.on('connect', () => {
             console.log("Connected to server");
             connected = true;
