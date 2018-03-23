@@ -4,7 +4,19 @@ var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 var Loki = require('lokijs');
 var path = require('path');
+var firebase = require('firebase');
 require('dotenv').config();
+
+var config = {
+    apiKey: "AIzaSyDqWPmiV-xBZFF5dstqsWh6rdVbjaNWKOE",
+    authDomain: "maccoin-697ec.firebaseapp.com",
+    databaseURL: "https://maccoin-697ec.firebaseio.com",
+    projectId: "maccoin-697ec",
+    storageBucket: "",
+    messagingSenderId: "1073396667730"
+};
+var firebaseApp = firebase.initializeApp(config);
+var firebaseDB = firebaseApp.database();
 
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
@@ -29,7 +41,7 @@ var db = new Loki('database.json', {
         }
     },
     autosave: true,
-    autosaveInterval: 4000,
+    autosaveInterval: 3500,
 });
 
 // Serve frontend/public
@@ -53,7 +65,25 @@ var activeMiners = [];
 // Value: [client] (array of clients)
 var clientsForWallet = {};
 
+
+/*
+    Telemetry
+*/
+var TELEMETRY_INTERVAL = 60000; // 1min
+var connectedClientsCount = 0;
+setInterval(() => {
+    firebaseDB.ref('telemetry/' + new Date().toString()).push({
+        "active_miners": activeMiners.length,
+    });
+}, TELEMETRY_INTERVAL);
+
+/*
+    Socket.io stuff
+*/
+
 io.on('connection', function(client) {
+    connectedClientsCount++;
+
     client.on('requestWallet', function(callback) {
         console.log("Wallet requested");
         var wallet = createWallet();
@@ -164,6 +194,7 @@ io.on('connection', function(client) {
     });
 
     client.on('disconnect', function() {
+        connectedClientsCount--;
         console.log("Wallet disconnected: " + client.wallet_id)
 
         // Remove from active miners (if it exists)
@@ -173,7 +204,7 @@ io.on('connection', function(client) {
         }
 
         // Remove from the list of clients for the wallet
-        clientsForWallet[client.wallet_id].splice(clientsForWallet[client.wallet_id].indexOf(client), 1)
+        clientsForWallet[client.wallet_id].splice(clientsForWallet[client.wallet_id].indexOf(client), 1);
     });
 });
 
