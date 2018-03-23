@@ -149,9 +149,12 @@ function distributeCoins() {
             result.balance += amountEach;
             wallets.update(result);
         }
+
+        activeMiners[i].emit('updateBalance', result.balance);
     }
 
     console.log("Distributed " + CONFIG_BLOCK_AMOUNT + " MacCoin to " + minerCount + " miners (" + amountEach + " each) >> " + allWalletsString);
+
 }
 
 function makeid() {
