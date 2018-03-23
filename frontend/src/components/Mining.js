@@ -20,32 +20,36 @@ class Mining extends Component {
 
   componentDidMount() {
     Connection.subscribe("mining", this.updateState);
-
-    // Check for focus events
-    window.onblur = () => {
-      this.isMining = false;
-      Connection.emit('stopMining');
-    };
-    window.onfocus = () => {
-      this.isMining = true;
-      Connection.emit('startMining');
-    };
+    Connection.emit('startMining', {});
 
     // Start the heartbeat
     this.heartbeat = setInterval(() => {
       Connection.emit('miningHeartbeat');
     }, 15000);
     Connection.emit('miningHeartbeat');
+
+    window.onblur = this.stopMining;
+    window.onfocus = this.startMining;
   }
 
   componentWillUnmount() {
     clearInterval(this.heartbeat);
     Connection.unsubscribe("mining");
+    window.removeEventListener('onblur', this.stopMining);
+    window.removeEventListener('onfocus', this.startMining);
   }
 
   updateState(state) {
     console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
+  }
+
+  stopMining() {
+    Connection.emit('stopMining', {});
+  }
+
+  startMining() {
+    Connection.emit('startMining', {});
   }
 
   render() {

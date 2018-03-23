@@ -3,6 +3,7 @@ import { Button, FormControl, ControlLabel } from 'react-bootstrap';
 import Popup from "reactjs-popup";
 
 import Nav from './Nav';
+import { Connection } from '../utils/connection.js'
 
 import '../styles/Wallet.css';
 
@@ -11,30 +12,53 @@ class Wallet extends Component {
     super(props);
 
     this.state = {
+      balance: 0,
+      walletID: '',
       sendAmount: '',
       recieverID: ''
     };
+    this.updateState = this.updateState.bind(this);
+  }
+
+  componentDidMount() {
+    Connection.subscribe("wallet", this.updateState);
+  }
+
+  componentWillUnmount() {
+    Connection.unsubscribe("wallet");
+  }
+
+  updateState(state) {
+    console.log(state);
+    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
   }
 
   sendTransaction() {
     // Send transaction to backend.
     console.log(this.state.sendAmount, this.state.recieverID);
+    var params = {
+      from_wallet_id: window.localStorage.getItem("wallet_id"),
+      from_wallet_key: window.localStorage.getItem("wallet_key"),
+      to_wallet_id: this.state.recieverID,
+      amount: this.state.sendAmount
+    };
+    Connection.emit('send', params)
   }
 
   render() {
-    const { sendAmount, recieverID} = this.state;
+    const { sendAmount, recieverID, walletID, balance} = this.state;
 
     return (
       <div className='wallet-page'>
         <Nav current='wallet'/>
         <p className='center small-heading wallet-header'>Your Wallet:</p>
         <div className='wallet-info center'>
-          <div className='info-box'>id: {'bvger'}</div>
-          <div className='info-box'>balance: {78324}m</div>
+          <div className='info-box'>id: {walletID}</div>
+          <div className='info-box'>balance: {balance}m</div>
           <Popup trigger={<Button className='btn-mac' bsSize='large'>Send</Button>} modal closeOnDocumentClick>
             { close => (
               <div>
-                <p className='small-heading'>Balance: {3284}m</p>
+                <p className='small-heading'>Balance: {balance}m</p>
                 <div className='form-row'>
                   <ControlLabel>Amount: </ControlLabel>
                   <FormControl
