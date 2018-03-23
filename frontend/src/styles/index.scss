@@ -12,39 +12,56 @@ html, #root, .router-root {
 }
 
 body {
+  @extend .p-font;
   margin: 0;
   padding: 0;
   height: 100%;
   color: $text-color;
   text-decoration: none;
-  @extend .p-font;
 }
-
-.nav {
-  display: flex;
-  width: 100%;
-  align-items: stretch;
-
-  li {
-    flex-grow: 1;
+/* resuable micro templates */
+.container {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+.block {
+  display: block;
+}
+.navigation {
+  @extend .f3;
+  @extend .right-text;
+  list-style-type: none;
+  @include small-only {
+    text-align: center;
+    position: relative;
+    width: 100%;
   }
-
-  a {
-    @extend .f4;
-    color: $text-color;
-    &:hover, &.current {
-      background-color: $primary-color !important;
-      border-bottom: 5px solid $secondary-color;
-    }
+}
+.current {
+  border-bottom: 5px solid $secondary-color;
+}
+/* we did not rest, not one second. */
+.credits {
+  @extend .f7;
+  padding: 0px 2px 0px 2px;
+  display: inline-block;
+  color: $contrast-dark-color;
+  transition: color 2s ease;
+  cursor: pointer;
+  &:hover {
+    color: $contrast-light-color;
   }
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-  
+}
+.coin-icon {
+  height: 25px;
+  width: auto;
+  display: inline-block;
+  padding: 0px 3px 0px 3px;
 }
 // move this elsewhere!!
 .btn.hamburger {
+  margin: 10px 0px;
   @media (min-width: 769px) {
     display: none;
   }

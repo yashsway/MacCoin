@@ -108,9 +108,7 @@ class Wallet extends Component {
             }
           </Popup>
           <ControlLabel className='p-font f3'>Team: </ControlLabel>
-          <Popup trigger={<Button className='btn-mac btn-question btn-light'>?</Button>} position="top left" closeOnDocumentClick>
-            Pick a team to help in the leaderboards!
-          </Popup>
+          <div className='pv3'>Pick a team to help in the <Link className={'bare-link'} to='/'>leaderboards!</Link> Your wealth will count towards the team you pick.</div>
           <FormControl
             className='dropdown-primary'
             type='select'
@@ -136,7 +134,7 @@ class Wallet extends Component {
           <h2 className='f3'>Transaction History:</h2>
           <div className='flex flex-column transactions-container'>
             { transactions.map((t) => {
-              return <div key={t.$loki} className='info-box'> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+              return <div key={t.$loki} className={`info-box ${t.from_wallet_id == walletID ? 'sent' :'received'}`}> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
             })}
           </div>
         </div>

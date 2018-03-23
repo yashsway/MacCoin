@@ -9,6 +9,20 @@
 .mining-page {
   @extend .p-font;
   color: $primary-color;
+  & .header-section {
+    & .header-container {
+      @include small-only {
+        flex-direction: column;
+        flex-grow: 1;
+        align-items: center;
+      }
+    }
+  }
+  & .message-section {
+    @extend .center-text;
+    @extend .f3;
+    color: $contrast-dark-color;
+  }
 }
 .form-row {
   margin-top: $spacing-large;

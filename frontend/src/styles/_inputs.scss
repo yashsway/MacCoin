@@ -72,9 +72,16 @@
     }
 }
 .dropdown-primary {
+    @extend .p-font;
     height: 3.5rem;
     padding: 0rem 1rem;
     text-overflow: ellipsis;
     outline: none;
     appearance: none;
+    border-color: $secondary-color;
+    &:focus {
+        border-color: $secondary-dark-color;
+        outline: none;
+        box-shadow: 0 0 0 0.1rem $secondary-color;
+    }
 }

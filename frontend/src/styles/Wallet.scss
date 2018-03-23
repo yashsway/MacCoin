@@ -13,7 +13,10 @@
   }
   & > .main-section {
     & .wallet-action {
-      width: 25%;
+      width: 300px;
+    }
+    & .dropdown-primary {
+      width: 300px;
     }
   }
   & > .transaction-section {
@@ -24,47 +27,26 @@
   }
 
   .btn-question {
-    width: 5%;
+    width: 50px;
     margin-bottom: $spacing-large;
   }
 
   .faculty-form {
-    width: 40%;
+    min-width: 40%;
     margin: 0 auto;
     margin-top: $spacing-large;
   }
 }
 
-// .wallet-page {
-//   display: flex;
-//   flex-direction: column;
-
-//   .wallet-header {
-//     margin-top: $spacing-large * 5;
-//   }
-
-  .info-box {
-    padding: $spacing-large * 2;
-    border: 1px solid $text-color;
-    text-align: center;
+.info-box {
+  padding: $spacing-large * 2;
+  border: 1px solid $text-color;
+  text-align: center;
+  border: 1px solid $contrast-dark-color;
+  &.sent {
+    border-color: $contrast-dark-color;
   }
-
-//   .transactions-container {
-//     flex-direction: column;
-//     width: 80%;
-//     margin: 0 auto;
-//   }
-
-//   @media (max-width: 768px) {
-//     .wallet-info {
-//       flex-direction: column;
-//       width: 80%;
-//       margin: 0 auto;
-//     }
-//   }
-// }
-
-// .popup-content {
-//   color: black;
-//   padding: $spacing-large*2 !important;
-// }
+  &.received {
+    border-color: $primary-light-color;
+  }
+}

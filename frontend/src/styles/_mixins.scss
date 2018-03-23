@@ -9,7 +9,7 @@ $desktop-max-width: 74.9375em;
 
 /* Small only */
 @mixin small-only {
-    @media screen and (max-width:#{$phone-max-width}) {
+    @media screen and (max-width:#{$phone-width}) {
         @content;
     }
 }
@@ -83,10 +83,20 @@ a {
         color: inherit;
     }
 }
-/* alignment */
-.fl-right {
-    float: right;
+.bare-link {
+    text-decoration: underline;
+    &:hover {
+        text-decoration-color: $secondary-dark-color;
+    }
 }
+.white-link {
+    text-decoration: underline;
+    text-decoration-color: $contrast-light-color;
+    &:hover {
+        text-decoration-color: $primary-light-color;
+    }
+}
+/* alignment */
 .center {
   display: flex;
   justify-content: center;

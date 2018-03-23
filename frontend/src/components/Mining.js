@@ -8,6 +8,8 @@ import { Connection } from '../utils/connection.js'
 
 import '../styles/Mining.css';
 import { createConnection } from 'net';
+// static assets
+import CoinIcon from '../assets/mcoin.png';
 
 class Mining extends Component {
   constructor(props) {
@@ -15,7 +17,8 @@ class Mining extends Component {
     this.initialized = false;
     this.state = {
       balance: 0,
-      walletID: '-'
+      walletID: '-',
+      message: 'Connecting to the MacCoin wealth network...'
     };
     this.updateState = this.updateState.bind(this);
   }
@@ -25,11 +28,18 @@ class Mining extends Component {
     // Start the heartbeat
     this.heartbeat = setInterval(() => {
       Connection.emit('miningHeartbeat');
+      this.setState({message:'Mining...'});
     }, 15000);
     Connection.emit('miningHeartbeat');
 
-    window.onblur = this.stopMining;
-    window.onfocus = this.startMining;
+    window.onblur = (function() {
+      this.stopMining;
+      this.setState({message:'Mining paused! Keep this window in focus to mine.'});
+    }).bind(this);
+    window.onfocus = (function() {
+      this.startMining;
+      this.setState({message:'Mining started...'});
+    }).bind(this);
   }
 
   componentWillUnmount() {
@@ -38,6 +48,7 @@ class Mining extends Component {
     Connection.unsubscribe("mining");
     window.onblur = null;
     window.onfocus = null;
+    this.setState({message:''});
   }
 
   updateState(state) {
@@ -45,7 +56,6 @@ class Mining extends Component {
       this.startMining();
     }
     this.initalized = true;
-    console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
   }
 
@@ -58,15 +68,15 @@ class Mining extends Component {
   }
 
   render() {
-    const { balance, walletID } = this.state;
+    const { balance, walletID, message } = this.state;
 
     return (
       <div className='block mining-page pa5'>
         <div className='block header-section'>
           <div className='container'>
-            <div className='flex flex-row flex-nowrap justify-end'>
+            <div className='flex flex-row flex justify-end header-container'>
               <div className='flex-auto f1 p-font p-color'><Link className={'unstyle-link'} to='/'>MacCoin</Link></div>
-              <div className='flex-auto f1 p-font p-color'>
+              <div className='flex-auto flex-grow f1 p-font p-color'>
                 <Nav current='mining'/>
               </div>
             </div>
@@ -78,13 +88,14 @@ class Mining extends Component {
               <img className='mining-gif' src='https://media.giphy.com/media/cnCnU42hrY0Ew/giphy.gif'></img>
             </div>
             <div className='pa3'>
-              <p className='block center-text f2'>Balance: {balance == 0 ? '-' : balance + 'm'}</p>
+              <p className='block center-text f2'>Balance: {balance == 0 ? '-' : balance}<img className='coin-icon' src={CoinIcon}></img></p>
               <p className='block center-text f3'>Wallet ID: {walletID}</p>
             </div>
           </div>
         </div>
-        <div className='block footer-section'>
-          <div className='container'>
+        <div className='block message-section'>
+          <div className='container pv5 s-font it'>
+            {message}
           </div>
         </div>
       </div>

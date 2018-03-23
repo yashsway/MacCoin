@@ -11,8 +11,8 @@
     margin: 0 auto;
     margin-top: $spacing-large*2;
     & > * {
-      @extend .f4;
-      color: $primary-color;
+      @extend .f3;
+      color: $contrast-dark-color;
     }
   }
 }

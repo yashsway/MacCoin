@@ -22,11 +22,11 @@ class Nav extends Component {
     const { open } = this.state;
 
     return (
-      <div className='fl-right'>
-        <Button className='btn-mac hamburger btn-light fl-right' bsSize='large' onClick={() => this.toggle()}>
+      <div className='flex justify-end'>
+        <Button className='btn-mac hamburger btn-light' bsSize='large' onClick={() => this.toggle()}>
           &#9776;
         </Button>
-        <ul className={`navigation right-text ${open ? '' : 'closed'}`}>
+        <ul className={`navigation ${open ? '' : 'closed'}`}>
           <li>
             <Link className={current === 'mining' ? 'current' : ''} to="/mining">Mining</Link>
           </li>

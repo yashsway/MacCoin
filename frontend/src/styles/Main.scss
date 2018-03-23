@@ -1,4 +1,6 @@
 @import "variables";
+@import "type";
+@import "space";
 @import "mixins";
 
 .main-page {
@@ -6,23 +8,31 @@
     height: auto;
     background-color: $contrast-light-color;
     &>.container {
-      height: 90vh;
+      min-height: 90vh;
       color: black;
       width: 90%;
       text-align: center;
+      @include small-only {
+        width: 50%;
+      }
     }
-    @include small-only {
-      min-height: 110vh;
+    & .lb-legend {
+      font-size: 0.5em;
     }
   }
   & > .footer-section {
     background-color: $contrast-dark-color;
     & .footer-container {
-      height: 10vh;
+      min-height: 10vh;
+      @include small-only {
+        min-width: 20vh;
+        flex-direction: column;
+      }
     }
     & .footer-part {
+      @extend .pv3;
       height: 100%;
-      width: 25%;
+      width: 100% / 3;
     }
   }
 }
