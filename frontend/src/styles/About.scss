@@ -4,4 +4,11 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+
+  .about-info {
+    width: 80%;
+    margin: 0 auto;
+    font-size: 1.2em;
+    margin-top: $spacing-large*2;
+  }
 }

@@ -14,6 +14,19 @@
   & > .footer-section {
     
   }
+
+  .btn-question {
+    width: 30px;
+    height: 30px;
+    margin-bottom: $spacing-large;
+    margin-left: $spacing-large;
+  }
+
+  .faculty-form {
+    width: 40%;
+    margin: 0 auto;
+    margin-top: $spacing-large;
+  }
 }
 
 // .wallet-page {

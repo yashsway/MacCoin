@@ -12,6 +12,7 @@ import { createConnection } from 'net';
 class Mining extends Component {
   constructor(props) {
     super(props);
+    this.initialized = false;
     this.state = {
       balance: 0,
       walletID: '-'
@@ -21,21 +22,39 @@ class Mining extends Component {
 
   componentDidMount() {
     Connection.subscribe("mining", this.updateState);
-    window.onblur = () => {
-      Connection.emit('stopMining');
-    };
-    window.onfocus = () => {
-      Connection.emit('startMining');
-    };
+    // Start the heartbeat
+    this.heartbeat = setInterval(() => {
+      Connection.emit('miningHeartbeat');
+    }, 15000);
+    Connection.emit('miningHeartbeat');
+
+    window.onblur = this.stopMining;
+    window.onfocus = this.startMining;
   }
 
   componentWillUnmount() {
+    clearInterval(this.heartbeat);
+    this.stopMining();
     Connection.unsubscribe("mining");
+    window.onblur = null;
+    window.onfocus = null;
   }
 
   updateState(state) {
+    if (!this.initalized && document.hasFocus()){
+      this.startMining();
+    }
+    this.initalized = true;
     console.log(state);
     this.setState({balance: Math.round(state.balance), walletID: state.wallet_id});
+  }
+
+  stopMining() {
+    Connection.emit('stopMining', {});
+  }
+
+  startMining() {
+    Connection.emit('startMining', {});
   }
 
   render() {

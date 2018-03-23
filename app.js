@@ -20,6 +20,9 @@ var firebaseDB = firebaseApp.database();
 
 var CONFIG_BLOCK_TIME = 5000;
 var CONFIG_BLOCK_AMOUNT = 10000;
+var CONFIG_HEARTBEAT_TIMEOUT = 30000;
+var CONFIG_SUPPORTED_TEAMS = ["artsci","commerce","engineering","healthsci","humanities","kin","nursing","science","socsci","none"];
+
 
 var wallets, transactions, blocks;
 var db = new Loki('database.json', {
@@ -56,6 +59,8 @@ server.listen(port, () => {
     console.log("Listening on port: " + port);
 });
 
+// This is used by the socket io heartbeat
+var hbeat = {};
 
 // This is an array of all clients that are currently connected and active
 var activeMiners = [];
@@ -65,17 +70,27 @@ var activeMiners = [];
 // Value: [client] (array of clients)
 var clientsForWallet = {};
 
-
 /*
     Telemetry
 */
 var TELEMETRY_INTERVAL = 60000; // 1min
 var connectedClientsCount = 0;
 setInterval(() => {
-    firebaseDB.ref('telemetry/' + new Date().toString()).push({
+    firebaseDB.ref('telemetry/' + new Date().toString()).set({
         "active_miners": activeMiners.length,
     });
 }, TELEMETRY_INTERVAL);
+
+/*
+    Team stats
+*/
+var TEAM_STATS_INTERVAL = 5000; // 30s
+var teamStatsCache;
+setInterval(() => {
+    teamStatsCache = getTeamStats();
+    io.emit('teamStatsUpdate', teamStatsCache);
+}, TEAM_STATS_INTERVAL);
+
 
 /*
     Socket.io stuff
@@ -84,21 +99,24 @@ setInterval(() => {
 io.on('connection', function(client) {
     connectedClientsCount++;
 
+    client.emit('teamStatsUpdate', teamStatsCache);
+
     client.on('requestWallet', function(callback) {
+        // Validate input
+        if (typeof callback !== "function") return;
         console.log("Wallet requested");
         var wallet = createWallet();
         callback(wallet);
     });
 
     client.on('haveWallet', function(walletInfo) {
+        if (typeof walletInfo !== "object") return;
         var walletId = walletInfo['wallet_id'];
         var walletKey = walletInfo['wallet_key'];
 
         // If we didn't get the right params, reject the client connection
         if(!walletId || !walletKey) {
-            console.log("Expected wallet_id and wallet_key");
-            client.disconnect();
-            return;
+            return { err: "Expected wallet_id and wallet_key" };
         }
 
         // Save the info to the client
@@ -117,7 +135,8 @@ io.on('connection', function(client) {
                 wallet_id: walletId,
                 wallet_key: walletKey,
                 balance: 0,
-                created: new Date()
+                created: new Date(),
+                team: "",
             });
         } else {
             // Sanity check that the key is the same
@@ -135,40 +154,87 @@ io.on('connection', function(client) {
 
         // Give them their current balance
         var walletObject = wallets.findObject({ wallet_id: client.wallet_id });
-        client.emit('updateBalance', walletObject.balance);
+        if(walletObject) {
+            client.emit('updateBalance', walletObject.balance);
+        }
 
         // Add client to our global list
         if(!clientsForWallet[walletId]) {
             clientsForWallet[walletId] = [];
         }
-
         clientsForWallet[walletId].push(client);
 
         console.log("Wallet joined: " + walletId);
     });
 
-    client.on('send', function(transaction, callback) {
+    client.on('send', function(transaction) {
+        if (typeof transaction !== "object") return;
         var from_wallet_id = transaction.from_wallet_id;
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
+        var amount = transaction.amount;
+        if (!(from_wallet_id && from_wallet_key && to_wallet_id && amount)) return;
 
-        var senderWallet = wallets.getObject("wallet_id", from_wallet_id);
-        var allClients = io.sockets.clients();
+        var senderWallet = wallets.findObject({wallet_id: from_wallet_id});
+        var receiverWallet = wallets.findObject({wallet_id: to_wallet_id});
+
+        if(!senderWallet || !receiverWallet) return;
 
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
             var newBalances = createTransaction(amount, from_wallet_id, to_wallet_id);
+            if (!newBalances) return;
             
             // Let both the from and to clients know that the transaction happened (if they're connected)
-            clientsForWallet[to_wallet_id].map((c) => {
-                c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
-            });
+            if(clientsForWallet[to_wallet_id]) {
+                clientsForWallet[to_wallet_id].map((c) => {
+                    c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
+                    c.emit('updateBalance', newBalances.toBalance);
+                });
+            }
 
-            clientsForWallet[from_wallet_id].map((c) => {
-                c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
-            });
-        } else {
-            console.log("User tried to send more than they had - cancelling");
+            if(clientsForWallet[from_wallet_id]) {
+                clientsForWallet[from_wallet_id].map((c) => {
+                    c.emit('updateTransactions', getTransactionsForWallet(from_wallet_id));
+                    c.emit('updateBalance', newBalances.fromBalance);
+                });
+            }
+
+            console.log("Sent " + amount + " from " + from_wallet_id + " to " + to_wallet_id);
         }
+    });
+
+    client.on('miningHeartbeat', function() {
+        //console.log("Hbeat");
+        hbeat[client.id] = Date.now();
+
+        setTimeout(() => {
+            var now = Date.now();
+            if (now - hbeat[client.id] > CONFIG_HEARTBEAT_TIMEOUT) {
+                console.log("Socket timed out: Heartbeat failed");
+
+                // Remove from active miners (if it exists)
+                var index = activeMiners.indexOf(client);
+                if (index > -1) {
+                    activeMiners.splice(index, 1);
+                }
+            }
+        }, CONFIG_HEARTBEAT_TIMEOUT);
+    });
+
+    client.on('setTeam', function(team) {
+        if (typeof team !== "string") return;
+        // Team has to be part of the supported list
+        console.log('set team '+ team);
+        if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
+            return;
+        }
+        var walletRecord = wallets.findObject({ wallet_id: client.wallet_id});
+        if(!walletRecord) return;
+        walletRecord.team = team;
+        console.log(walletRecord);
+        wallets.update(walletRecord);
+
+        console.log(client.wallet_id + " joined team " + team);
     });
 
     client.on('startMining', function() {
@@ -204,7 +270,13 @@ io.on('connection', function(client) {
         }
 
         // Remove from the list of clients for the wallet
-        clientsForWallet[client.wallet_id].splice(clientsForWallet[client.wallet_id].indexOf(client), 1);
+        var walletClients = clientsForWallet[client.wallet_id];
+        if(walletClients) {
+            var index = clientsForWallet[client.wallet_id].indexOf(client);
+            if (index > -1) {
+                clientsForWallet[client.wallet_id].splice(index , 1);
+            }
+        }
     });
 });
 
@@ -230,14 +302,16 @@ function distributeCoins() {
         var walletId = activeMiners[i].wallet_id;
         var result = wallets.findObject({wallet_id: walletId});
         if(result && !paidClients.includes(walletId)) {
-            result.balance += amountEach;
+            result.balance = parseFloat(result.balance) + parseFloat(amountEach);
             wallets.update(result);
             paidClients.push(walletId);
         }
 
         // Update every client with that wallet id
-        for(var j = 0; j < clientsForWallet[walletId].length; j++) {
-            clientsForWallet[walletId][j].emit('updateBalance', result.balance)
+        if(clientsForWallet[walletId]) {
+            for(var j = 0; j < clientsForWallet[walletId].length; j++) {
+                clientsForWallet[walletId][j].emit('updateBalance', result.balance)
+            }
         }
     }
 
@@ -268,32 +342,36 @@ function createWallet() {
         wallet_id: id,
         wallet_key: key,
         balance: 0,
-        created: new Date()
+        created: new Date(),
+        team: "none",
     });
     console.log("Created wallet: " + id);
     return {wallet_id: id, wallet_key: key};
 }
 
-function createTransaction(amount, from_wallet_id, to_wallet_id,) {
+function createTransaction(amount, from_wallet_id, to_wallet_id) {
     transactions.insert({
-        transaction_id: transactionCount++,
         from_wallet_id: from_wallet_id,
         to_wallet_id: to_wallet_id,
         amount: amount,
         time: new Date()
     });
 
-    var fromWallet = wallets.getObject("wallet_id", from_wallet_id);
-    fromWallet.balance = fromWallet.balance - amount;
+    var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
+    if(!fromWallet) return;
+    fromWallet.balance = parseFloat(fromWallet.balance) - parseFloat(amount);
     
-    var toWallet = wallets.getObject("wallet_id", to_wallet_id);
-    toWallet.balance = toWallet.balance + amount;
+    var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
+    if(!toWallet) return;
+    toWallet.balance = parseFloat(toWallet.balance) + parseFloat(amount);
 
-    return {"fromBalance": fromWallet.balance, "toWallet": toWallet.balance};
+    var newBalances = {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
+
+    return newBalances;
 }
 
 function getTransactionsForWallet(walletId) {
-    return transactions.find({
+    var txs = transactions.find({
         '$or': [
             {
                 'to_wallet_id': walletId
@@ -303,4 +381,23 @@ function getTransactionsForWallet(walletId) {
             }
         ]
     });
+
+    return txs;
+}
+
+function getTeamStats() {
+    var teamTotals = {};
+    for(var i = 0; i < CONFIG_SUPPORTED_TEAMS.length; i++) {
+        teamTotals[CONFIG_SUPPORTED_TEAMS[i]] = 0;
+    }
+    var allWallets = wallets.find();
+
+    for(var i = 0; i < allWallets.length; i++) {
+        var w = allWallets[i];
+        if(w.team) {
+            teamTotals[w.team] += parseFloat(w.balance);
+        }
+    }
+
+    return teamTotals;
 }

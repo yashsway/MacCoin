@@ -28,10 +28,10 @@ class Nav extends Component {
         </Button>
         <ul className={`navigation right-text ${open ? '' : 'closed'}`}>
           <li>
-            <Link className={current == 'mining' ? 'current' : ''} to="/mining">Mining</Link>
+            <Link className={current === 'mining' ? 'current' : ''} to="/mining">Mining</Link>
           </li>
           <li>
-            <Link className={current == 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
+            <Link className={current === 'wallet' ? 'current' : ''} to="/wallet">Wallet</Link>
           </li>
           <li>
             <Link className={current == 'about' ? 'current' : ''} to="/about">Help</Link>

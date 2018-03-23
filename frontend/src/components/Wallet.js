@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { Button, FormControl, ControlLabel } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import Popup from "reactjs-popup";
+import moment from 'moment';
 
 import Nav from './Nav';
+import { Connection } from '../utils/connection.js'
 
 import '../styles/Wallet.css';
 
@@ -12,18 +14,49 @@ class Wallet extends Component {
     super(props);
 
     this.state = {
+      balance: 0,
+      walletID: '',
       sendAmount: '',
-      recieverID: ''
+      recieverID: '',
+      team: '',
+      transactions: []
     };
+    this.updateState = this.updateState.bind(this);
+  }
+
+  componentDidMount() {
+    Connection.subscribe("wallet", this.updateState);
+  }
+
+  componentWillUnmount() {
+    Connection.unsubscribe("wallet");
+  }
+
+  updateState(state) {
+    this.setState({balance: Math.round(state.balance), walletID: state.wallet_id, team: state.team, transactions: state.transactions});
   }
 
   sendTransaction() {
     // Send transaction to backend.
     console.log(this.state.sendAmount, this.state.recieverID);
+    var params = {
+      from_wallet_id: window.localStorage.getItem("wallet_id"),
+      from_wallet_key: window.localStorage.getItem("wallet_key"),
+      to_wallet_id: this.state.recieverID,
+      amount: this.state.sendAmount
+    };
+    Connection.emit('send', params)
+  }
+
+  updateTeam(teamName) {
+    console.log("set team");
+    Connection.setState('team', teamName);
+    Connection.emit('setTeam', teamName);
+    window.localStorage.setItem('team', teamName);
   }
 
   render() {
-    const { sendAmount, recieverID} = this.state;
+    const { sendAmount, recieverID, walletID, balance, team, transactions} = this.state;
 
     return (
       <div className='block wallet-page pa5'>
@@ -41,12 +74,12 @@ class Wallet extends Component {
         <div className='container'>
           <h2 className='f3'>Your Wallet:</h2>
           <div className='flex flex-column flex-wrap f4'>
-            <div className='wallet-piece'>id: {'bvger'}</div>
-            <div className='wallet-piece'>balance: {78324}m</div>
+            <div className='wallet-piece'>id: {walletID}</div>
+            <div className='wallet-piece'>balance: {balance}m</div>
             <Popup trigger={<Button className='flex-auto flex-shrink mv3 btn-secondary'>Send coin to a friend</Button>} modal closeOnDocumentClick>
             { close => (
               <div>
-                <p className='small-heading'>Balance: {3284}m</p>
+                <p className='small-heading'>Balance: {balance}m</p>
                 <div className='form-row'>
                   <ControlLabel>Amount: </ControlLabel>
                   <FormControl
@@ -74,6 +107,26 @@ class Wallet extends Component {
               </div>)
             }
           </Popup>
+          <ControlLabel>Team: </ControlLabel>
+          <Popup trigger={<Button className='btn-mac btn-question'>?</Button>} position="top left" closeOnDocumentClick>
+            Pick a team to help in the leaderboards!
+          </Popup>
+          <FormControl
+            type='select'
+            componentClass='select'
+            value={team}
+            onChange={(event) => this.updateTeam(event.target.value)}>
+            <option value=''>Select a team</option>
+            <option value='engineering'>Engineering</option>
+            <option value='artsci'>Arts & Science</option>
+            <option value='commerce'>Commerce</option>
+            <option value='healthsci'>Health Sciences</option>
+            <option value='humanities'>Humanities</option>
+            <option value='kin'>Kinesiology</option>
+            <option value='nursing'>Nursing</option>
+            <option value='science'>Science</option>
+            <option value='socsci'>Social Sciences</option>
+          </FormControl>
           </div>
         </div>
       </div>
@@ -81,12 +134,9 @@ class Wallet extends Component {
         <div className='container'>
           <h2 className='f3'>Transaction History:</h2>
           <div className='flex flex-column transactions-container'>
-            <div className='info-box'>Recieved 400m from kda29 on Friday, March 23, 3:00pm</div>
-            <div className='info-box'>Sent 40m to kda29 on Friday, March 23, 3:00pm</div>
-            <div className='info-box'>Recieved 400m from kjnf29 on Friday, March 23, 3:00pm</div>
-            <div className='info-box'>Recieved 400m from kda29 on Friday, March 23, 3:00pm</div>
-            <div className='info-box'>Sent 40m to kda29 on Friday, March 23, 3:00pm</div>
-            <div className='info-box'>Recieved 400m from kjnf29 on Friday, March 23, 3:00pm</div>
+            { transactions.map((t) => {
+              return <div key={t.$loki} className='info-box'> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+            })}
           </div>
         </div>
       </div>
