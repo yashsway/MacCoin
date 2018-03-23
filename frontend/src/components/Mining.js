@@ -14,7 +14,7 @@ class Mining extends Component {
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.state = {
       balance: 0,
-      walletID: ''
+      walletID: '-'
     };
   }
 
@@ -93,7 +93,7 @@ class Mining extends Component {
           <div className='center'>
             <img className='mining-gif' src='https://media.giphy.com/media/cnCnU42hrY0Ew/giphy.gif'></img>
           </div>
-          <p className='center small-heading'>Balance: {balance}m</p>
+          <p className='center small-heading'>Balance: {balance == 0 ? '-' : balance + 'm'}</p>
           <p className='center small-heading'>Wallet ID: {walletID}</p>
         </div>
         <div className='center'>
