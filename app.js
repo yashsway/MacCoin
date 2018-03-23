@@ -147,16 +147,17 @@ io.on('connection', function(client) {
         console.log("Wallet joined: " + walletId);
     });
 
-    client.on('send', function(transaction) {
+    client.on('send', function(transaction, callback) {
         var from_wallet_id = transaction.from_wallet_id;
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
 
         var senderWallet = wallets.getObject("wallet_id", from_wallet_id);
+        var allClients = io.sockets.clients();
 
         if ((senderWallet.balance >= amount) && (senderWallet.wallet_key == from_wallet_key)) {
-            createTransaction(amount, from_wallet_id, to_wallet_id);
-
+            var newBalances = createTransaction(amount, from_wallet_id, to_wallet_id);
+            
             // Let both the from and to clients know that the transaction happened (if they're connected)
             clientsForWallet[to_wallet_id].map((c) => {
                 c.emit('updateTransactions', getTransactionsForWallet(to_wallet_id));
@@ -287,6 +288,8 @@ function createTransaction(amount, from_wallet_id, to_wallet_id,) {
     
     var toWallet = wallets.getObject("wallet_id", to_wallet_id);
     toWallet.balance = toWallet.balance + amount;
+
+    return {"fromBalance": fromWallet.balance, "toWallet": toWallet.balance};
 }
 
 function getTransactionsForWallet(walletId) {
