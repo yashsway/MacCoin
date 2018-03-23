@@ -12,7 +12,7 @@
 .btn-primary {
     @extend .f3;
     @extend .p-font;
-    @extend .mh2;
+    @extend .mv2;
     text-shadow: none;
     border: none;
     background: $primary-color;
@@ -27,7 +27,7 @@
 .btn-secondary {
     @extend .f4;
     @extend .p-font;
-    @extend .mh2;
+    @extend .mv2;
     text-shadow: none;
     border: none;
     background: $secondary-color;
@@ -42,7 +42,7 @@
 .btn-dark {
     @extend .f5;
     @extend .p-font;
-    @extend .mh2;
+    @extend .mv2;
     text-shadow: none;
     border: none;
     background: $contrast-dark-color;
@@ -58,7 +58,7 @@
 .btn-light {
     @extend .f5;
     @extend .p-font;
-    @extend .mh2;
+    @extend .mv2;
     text-shadow: none;
     border: 2px solid $contrast-dark-color;
     background: #fff;
@@ -70,4 +70,11 @@
     &:active, &.active {
         box-shadow: none;
     }
+}
+.dropdown-primary {
+    height: 3.5rem;
+    padding: 0rem 1rem;
+    text-overflow: ellipsis;
+    outline: none;
+    appearance: none;
 }

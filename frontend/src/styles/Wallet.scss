@@ -1,4 +1,10 @@
 @import "variables";
+@import "mixins";
+@import "type";
+@import "space";
+@import "structure";
+@import "patterns";
+@import "inputs";
 
 .wallet-page {
   color: $contrast-dark-2-color;
@@ -6,7 +12,9 @@
 
   }
   & > .main-section {
-
+    & .wallet-action {
+      width: 25%;
+    }
   }
   & > .transaction-section {
 
@@ -16,10 +24,8 @@
   }
 
   .btn-question {
-    width: 30px;
-    height: 30px;
+    width: 5%;
     margin-bottom: $spacing-large;
-    margin-left: $spacing-large;
   }
 
   .faculty-form {

@@ -120,7 +120,7 @@ class Main extends Component {
             <div className='flex-auto flex-shrink-1 center-text pa4 footer-part credit-part'>
               <div className='flex flex-column justify-center h100'>
                 <div className='flex-shrink self-center'>
-                  Software 2018
+                  Software Engineering Class of 2018
                 </div>
               </div>
             </div>

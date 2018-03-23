@@ -76,7 +76,7 @@ class Wallet extends Component {
           <div className='flex flex-column flex-wrap f4'>
             <div className='wallet-piece'>id: {walletID}</div>
             <div className='wallet-piece'>balance: {balance}m</div>
-            <Popup trigger={<Button className='flex-auto flex-shrink mv3 btn-secondary'>Send coin to a friend</Button>} modal closeOnDocumentClick>
+            <Popup trigger={<Button className='flex-auto flex-shrink mv3 btn-secondary wallet-action'>Send coin to a friend</Button>} modal closeOnDocumentClick>
             { close => (
               <div>
                 <p className='small-heading'>Balance: {balance}m</p>
@@ -107,11 +107,12 @@ class Wallet extends Component {
               </div>)
             }
           </Popup>
-          <ControlLabel>Team: </ControlLabel>
-          <Popup trigger={<Button className='btn-mac btn-question'>?</Button>} position="top left" closeOnDocumentClick>
+          <ControlLabel className='p-font f3'>Team: </ControlLabel>
+          <Popup trigger={<Button className='btn-mac btn-question btn-light'>?</Button>} position="top left" closeOnDocumentClick>
             Pick a team to help in the leaderboards!
           </Popup>
           <FormControl
+            className='dropdown-primary'
             type='select'
             componentClass='select'
             value={team}
