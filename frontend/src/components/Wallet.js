@@ -55,7 +55,7 @@ class Wallet extends Component {
 
   render() {
     const { sendAmount, recieverID, walletID, balance, teamValue, transactions} = this.state;
-console.log(transactions);
+
     return (
       <div className='wallet-page'>
         <Nav current='wallet'/>
@@ -96,7 +96,12 @@ console.log(transactions);
           </Popup>
         </div>
         <div className='form-row faculty-form'>
+        <div>
           <ControlLabel>Team: </ControlLabel>
+          <Popup trigger={<Button className='btn-mac btn-question'>?</Button>} position="top left" closeOnDocumentClick>
+            Pick a team to help in the leaderboards!
+          </Popup>
+          </div>
           <FormControl
             type='select'
             componentClass='select'
