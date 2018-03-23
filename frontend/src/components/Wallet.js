@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Button } from 'react-bootstrap';
-import ReactModal from 'react-modal';
+import { Button, FormControl, ControlLabel } from 'react-bootstrap';
+import Popup from "reactjs-popup";
 
 import Nav from './Nav';
 
@@ -11,16 +11,18 @@ class Wallet extends Component {
     super(props);
 
     this.state = {
-      modalOpen: false
+      sendAmount: '',
+      recieverID: ''
     };
   }
 
-  toggleModal() {
-    this.setState({modalOpen: !this.props.modalOpen});
+  sendTransaction() {
+    // Send transaction to backend.
+    console.log(this.state.sendAmount, this.state.recieverID);
   }
 
   render() {
-    const { modalOpen } = this.state;
+    const { sendAmount, recieverID} = this.state;
 
     return (
       <div className='wallet-page'>
@@ -29,12 +31,38 @@ class Wallet extends Component {
         <div className='wallet-info center'>
           <div className='info-box'>id: {'bvger'}</div>
           <div className='info-box'>balance: {78324}m</div>
-          <Button className='btn-mac' bsSize='large' onClick={() => this.toggleModal()}>Send</Button>
-          <ReactModal
-             isOpen={modalOpen}
-             contentLabel='Minimal Modal Example'>
-            
-          </ReactModal>
+          <Popup trigger={<Button className='btn-mac' bsSize='large'>Send</Button>} modal closeOnDocumentClick>
+            { close => (
+              <div>
+                <p className='small-heading'>Balance: {3284}m</p>
+                <div className='form-row'>
+                  <ControlLabel>Amount: </ControlLabel>
+                  <FormControl
+                    type="number"
+                    value={sendAmount}
+                    placeholder="Enter amount"
+                    onChange={(event) => this.setState({sendAmount: event.target.value})}
+                  />
+                </div>
+                <div className='form-row'>
+                  <ControlLabel>Reciever Wallet ID: </ControlLabel>
+                  <FormControl
+                    type="text"
+                    value={recieverID}
+                    placeholder="Enter ID"
+                    onChange={(event) => this.setState({recieverID: event.target.value})}
+                  />
+                </div>
+                <div className='center'>
+                  <Button className='btn-mac' bsSize='large' onClick={() => {
+                    this.sendTransaction();
+                    close();
+                  }}>Send</Button>
+                </div>
+              </div>)
+            }
+          </Popup>
+
         </div>
         <p className='center small-heading wallet-header'>Transaction History:</p>
         <div className='center transactions-container'>
