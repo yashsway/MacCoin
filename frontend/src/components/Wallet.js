@@ -49,6 +49,7 @@ class Wallet extends Component {
   updateTeam(team) {
     this.setState({teamValue: team});
     window.localStorage.setItem('team', team);
+    Connection.emit('setTeam', team);
   }
 
   render() {

@@ -211,12 +211,15 @@ io.on('connection', function(client) {
 
     client.on('setTeam', function(team) {
         // Team has to be part of the supported list
+        console.log('set team '+ team);
         if (CONFIG_SUPPORTED_TEAMS.indexOf(team) === -1) {
+            console.log(' oh no');
             return;
         }
 
         var walletRecord = wallets.find({ wallet_id: client.wallet_id});
         walletRecord.team = team;
+        console.log(walletRecord);
         wallets.update(walletRecord);
     });
 
@@ -367,6 +370,7 @@ function getTeamStats() {
     console.log("Counting " + allWallets.length + "wallets");
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
+        console.log(w);
         if(w.team) {
             teamTotals[w.team] += w.balance;
         }
