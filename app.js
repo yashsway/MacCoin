@@ -43,7 +43,7 @@ var db = new Loki('database.json', {
             blocks = db.addCollection('blocks');
         }
         // clean negative trs
-        clean();
+        // clean();
         DBInitFinished();
     },
     autosave: true,
