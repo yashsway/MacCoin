@@ -93,7 +93,7 @@ function clean() {
     });
     // reset negatives in wallet
     cleanWallet(function(obj){
-        return (obj.balance<0);
+        return (parseFloat(obj.balance)<0);
     },"Neg balances found:",function(obj) {
         // reset to 0
         obj.balance = Math.abs(obj.balance);

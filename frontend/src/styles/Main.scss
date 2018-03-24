@@ -16,11 +16,28 @@
         width: 50%;
       }
     }
-    /* chart not taking on styles */
-    svg {
-      @include small-only {
-        width: 200px;
-        height: 100px;
+    & .chart {
+      & .lb-chart {
+        @include portrait-small {
+          display: none;
+        }
+      }
+      & .lb-legend {
+        @include portrait-small {
+          display: none;
+        }
+      }
+    }
+    & .yes-chart {
+      @include portrait-small {
+        display: none;
+      }
+    }
+    & .no-chart {
+      display: none;
+      @include portrait-small {
+        display: flex;
+        justify-content: center;
       }
     }
   }

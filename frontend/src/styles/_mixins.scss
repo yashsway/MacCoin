@@ -7,6 +7,16 @@ $tablet-max-width: 63.9375em;
 $desktop-min-width: 64em;
 $desktop-max-width: 74.9375em;
 
+@mixin portrait-small {
+    @media screen and (orientation:portrait) and (max-width:#{$phone-width}) { 
+        @content;
+    }
+}
+@mixin landscape-small {
+    @media screen and (orientation:landscape) and (max-width:#{$phone-width}) { 
+        @content;
+    }
+}
 /* Small only */
 @mixin small-only {
     @media screen and (max-width:#{$phone-width}) {

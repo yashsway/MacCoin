@@ -63,14 +63,15 @@ class Main extends Component {
             <div className='flex flex-column flex-nowrap items-center'>
               <div className='flex-shrink f1 p-font p-color pt5'>MacCoin<img className='coin-icon_50' src={CoinIcon}></img></div>
               <div className='flex-shrink f3 s-font c-d-color pb5'>{quote}</div>
-              <div className='flex-grow'>
-                <div className ='center'>
-                  <BarChart className='lb-chart' data={this.state.graphData} />
+              <div className='flex-grow chart'>
+                <div className ='center lb-chart'>
+                  <BarChart data={this.state.graphData} />
                 </div>
-                <div className = 'center' >
-                    <Legend className='lb-legend' data={this.state.graphData} dataId={'x'} config={this.state.legendConfig} horizontal />
+                <div className = 'center lb-legend' >
+                    <Legend data={this.state.graphData} dataId={'x'} config={this.state.legendConfig} horizontal />
                 </div></div>
-                <h2 className='p-font f4'>Live MacCoin wealth distribution across campus</h2>
+                <h2 className='p-font f4 yes-chart'>Live MacCoin wealth distribution across campus</h2>
+                <h2 className='p-font f4 no-chart'>Switch to landscape view to see MacCoin wealth distribution!</h2>
               <div className='flex-grow pv5'>
                 <h2 className='s-font f3 it'>Help your faculty - start mining <span className='highlight'>MacCoin</span> now!</h2>
                 <LinkContainer to='/mining'>
