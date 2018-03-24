@@ -68,9 +68,23 @@ function clean() {
             console.log(`no fix tr ${i}`);
         }
     }
-    // check massive pools
+    // clean massive pools
+    // errs = [];
     // errs = transactions.find({ amount:{'$jgt': 1000000000000 }});
     // console.log(`big pools found: ${errs.length}`);
+    // clean NaNs
+    errs = [];
+    errs = wallets.where(function(obj){
+        // check for NaN by attempting to parse as float
+       return isNaN(parseFloat(obj.balance));
+    });
+    console.log(`NaN balances found: ${errs.length}`);
+    for (var i=0;i<errs.length;i++) {
+        console.log(`${errs[i].wallet_id} corrupt`);
+        // reset to 0
+        errs[i].balance = 0;
+    }
+    if (errs.length>0) wallets.update(errs);
 }
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
@@ -421,7 +435,12 @@ function getTeamStats() {
     for(var i = 0; i < allWallets.length; i++) {
         var w = allWallets[i];
         if(w.team) {
-            teamTotals[w.team] += parseFloat(w.balance);
+            // check if not NaN AFTER attempted parse
+            if(!isNaN(parseFloat(w.balance))) {
+                teamTotals[w.team] += parseFloat(w.balance);
+            } else {
+                teamTotals[w.team] += 0;
+            }
         }
     }
 
