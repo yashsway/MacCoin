@@ -42,13 +42,36 @@ var db = new Loki('database.json', {
         if(blocks === null) {
             blocks = db.addCollection('blocks');
         }
-
+        // clean negative trs
+        clean();
         DBInitFinished();
     },
     autosave: true,
     autosaveInterval: 3500,
 });
-
+// fix errors
+function clean() {
+    var errs = [];
+    // clean negatives
+    errs = transactions.find({ amount:{'$jlt': 0}});
+    console.log(`neg errors found: ${errs.length}`);
+    for (var i=0;i<errs.length;i++) {
+        if (isNaN(errs[i].amount)) {
+            transactions.remove(errs[i]);
+        };
+        var fixed = transactions.find({ amount: {'$eq': Math.abs(errs[i].amount)}, from_wallet_id: { '$eq': errs[i].from_wallet_id}, to_wallet_id: { '$eq': errs[i].to_wallet_id }, time: {'$eq':errs[i].time} });
+        if (fixed.length===0) {
+            console.log(`fixing tr ${i} at ${errs[i].time} from ${errs[i].from_wallet_id} to ${errs[i].to_wallet_id}, amount: ${errs[i].amount}`);
+            // make transaction reverting change in same account. (crediting coins back)
+            createTransaction(Math.abs(errs[i].amount),errs[i].from_wallet_id,errs[i].to_wallet_id,errs[i].time);
+        } else {
+            console.log(`no fix tr ${i}`);
+        }
+    }
+    // check massive pools
+    // errs = transactions.find({ amount:{'$jgt': 1000000000000 }});
+    // console.log(`big pools found: ${errs.length}`);
+}
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
 app.get('/*', function (req, res) {
@@ -62,7 +85,7 @@ server.listen(port, () => {
 });
 
 function DBInitFinished() {
-    
+
 // This is used by the socket io heartbeat
 var hbeat = {};
 

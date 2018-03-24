@@ -3,3 +3,4 @@ bower_components/
 .env
 database.json
 *.DS_Store
+.vscode/
