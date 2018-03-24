@@ -76,7 +76,7 @@ function clean() {
     errs = [];
     errs = wallets.where(function(obj){
         // check for NaN by attempting to parse as float
-       return isNaN(parseFloat(obj.balance)) || obj.balance.includes('e');
+       return isNaN(parseFloat(obj.balance)) || (obj.balance.toString()).includes('e');
     });
     console.log(`NaN balances found: ${errs.length}`);
     for (var i=0;i<errs.length;i++) {
