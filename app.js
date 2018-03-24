@@ -51,7 +51,7 @@ var db = new Loki('database.json', {
 });
 // fix errors
 function clean() {
-    var errs = [];
+    // var errs = [];
     // clean negatives
     // errs = transactions.find({ amount:{'$jlt': 0}});
     // console.log(`neg errors found: ${errs.length}`);
@@ -72,20 +72,33 @@ function clean() {
     // errs = [];
     // errs = transactions.find({ amount:{'$jgt': 1000000000000 }});
     // console.log(`big pools found: ${errs.length}`);
+    function cleanWallet(whereCond = null, message = 'bad where condition', cleanerCond = (obj) => { return; }) {
+        var badObjs = [];
+        if(whereCond!==null) badObjs = wallets.where(whereCond);
+        console.log(`${message} ${badObjs.length}`);
+        for (var i=0;i<badObjs.length;i++) {
+            console.log(`${badObjs[i].wallet_id} corrupt`);
+            badObjs[i] = cleanerCond(badObjs[i]);
+        }
+        if (badObjs.length>0) wallets.update(badObjs);
+    }
     // clean NaNs or exponentials
-    errs = [];
-    errs = wallets.where(function(obj){
+    cleanWallet(function(obj){
         // check for NaN by attempting to parse as float
        return isNaN(parseFloat(obj.balance)) || (obj.balance.toString()).includes('e');
-    });
-    console.log(`NaN balances found: ${errs.length}`);
-    for (var i=0;i<errs.length;i++) {
-        console.log(`${errs[i].wallet_id} corrupt`);
+    },"NaN balances found:",function(obj) {
         // reset to 0
-        errs[i].balance = 0;
-    }
-    if (errs.length>0) wallets.update(errs);
-    // clean small balances 4.000000000000001e+109
+        obj.balance = 0;
+        return obj;
+    });
+    // reset negatives in wallet
+    cleanWallet(function(obj){
+        return (obj.balance<0);
+    },"Neg balances found:",function(obj) {
+        // reset to 0
+        obj.balance = Math.abs(obj.balance);
+        return obj;
+    });
 }
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
