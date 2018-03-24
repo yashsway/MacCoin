@@ -43,7 +43,7 @@ var db = new Loki('database.json', {
             blocks = db.addCollection('blocks');
         }
         // clean negative trs
-        // clean();
+        clean();
         DBInitFinished();
     },
     autosave: true,
@@ -53,30 +53,30 @@ var db = new Loki('database.json', {
 function clean() {
     var errs = [];
     // clean negatives
-    errs = transactions.find({ amount:{'$jlt': 0}});
-    console.log(`neg errors found: ${errs.length}`);
-    for (var i=0;i<errs.length;i++) {
-        if (isNaN(errs[i].amount)) {
-            transactions.remove(errs[i]);
-        };
-        var fixed = transactions.find({ amount: {'$eq': Math.abs(errs[i].amount)}, from_wallet_id: { '$eq': errs[i].from_wallet_id}, to_wallet_id: { '$eq': errs[i].to_wallet_id }, time: {'$eq':errs[i].time} });
-        if (fixed.length===0) {
-            console.log(`fixing tr ${i} at ${errs[i].time} from ${errs[i].from_wallet_id} to ${errs[i].to_wallet_id}, amount: ${errs[i].amount}`);
-            // make transaction reverting change in same account. (crediting coins back)
-            createTransaction(Math.abs(errs[i].amount),errs[i].from_wallet_id,errs[i].to_wallet_id,errs[i].time);
-        } else {
-            console.log(`no fix tr ${i}`);
-        }
-    }
+    // errs = transactions.find({ amount:{'$jlt': 0}});
+    // console.log(`neg errors found: ${errs.length}`);
+    // for (var i=0;i<errs.length;i++) {
+    //     if (isNaN(errs[i].amount)) {
+    //         transactions.remove(errs[i]);
+    //     };
+    //     var fixed = transactions.find({ amount: {'$eq': Math.abs(errs[i].amount)}, from_wallet_id: { '$eq': errs[i].from_wallet_id}, to_wallet_id: { '$eq': errs[i].to_wallet_id }, time: {'$eq':errs[i].time} });
+    //     if (fixed.length===0) {
+    //         console.log(`fixing tr ${i} at ${errs[i].time} from ${errs[i].from_wallet_id} to ${errs[i].to_wallet_id}, amount: ${errs[i].amount}`);
+    //         // make transaction reverting change in same account. (crediting coins back)
+    //         createTransaction(Math.abs(errs[i].amount),errs[i].from_wallet_id,errs[i].to_wallet_id,errs[i].time);
+    //     } else {
+    //         console.log(`no fix tr ${i}`);
+    //     }
+    // }
     // clean massive pools
     // errs = [];
     // errs = transactions.find({ amount:{'$jgt': 1000000000000 }});
     // console.log(`big pools found: ${errs.length}`);
-    // clean NaNs
+    // clean NaNs or exponentials
     errs = [];
     errs = wallets.where(function(obj){
         // check for NaN by attempting to parse as float
-       return isNaN(parseFloat(obj.balance));
+       return isNaN(parseFloat(obj.balance)) || obj.balance.includes('e');
     });
     console.log(`NaN balances found: ${errs.length}`);
     for (var i=0;i<errs.length;i++) {
@@ -85,6 +85,7 @@ function clean() {
         errs[i].balance = 0;
     }
     if (errs.length>0) wallets.update(errs);
+    // clean small balances 4.000000000000001e+109
 }
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
