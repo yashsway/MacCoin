@@ -7,6 +7,14 @@ var path = require('path');
 var firebase = require('firebase');
 require('dotenv').config();
 
+// logger
+var winston = require('winston');
+winston.configure({
+    transports: [
+        new (winston.transports.File)({ filename: './db-clean.log' })
+    ]
+});
+
 var config = {
     apiKey: "AIzaSyDqWPmiV-xBZFF5dstqsWh6rdVbjaNWKOE",
     authDomain: "maccoin-697ec.firebaseapp.com",
@@ -42,45 +50,36 @@ var db = new Loki('database.json', {
         if(blocks === null) {
             blocks = db.addCollection('blocks');
         }
-        // clean negative trs
-        clean();
+        // initialize
         DBInitFinished();
+        // clean negative trs
+        clean(false);
     },
     autosave: true,
     autosaveInterval: 3500,
 });
 // fix errors
-function clean() {
-    // var errs = [];
-    // clean negatives
-    // errs = transactions.find({ amount:{'$jlt': 0}});
-    // console.log(`neg errors found: ${errs.length}`);
-    // for (var i=0;i<errs.length;i++) {
-    //     if (isNaN(errs[i].amount)) {
-    //         transactions.remove(errs[i]);
-    //     };
-    //     var fixed = transactions.find({ amount: {'$eq': Math.abs(errs[i].amount)}, from_wallet_id: { '$eq': errs[i].from_wallet_id}, to_wallet_id: { '$eq': errs[i].to_wallet_id }, time: {'$eq':errs[i].time} });
-    //     if (fixed.length===0) {
-    //         console.log(`fixing tr ${i} at ${errs[i].time} from ${errs[i].from_wallet_id} to ${errs[i].to_wallet_id}, amount: ${errs[i].amount}`);
-    //         // make transaction reverting change in same account. (crediting coins back)
-    //         createTransaction(Math.abs(errs[i].amount),errs[i].from_wallet_id,errs[i].to_wallet_id,errs[i].time);
-    //     } else {
-    //         console.log(`no fix tr ${i}`);
-    //     }
-    // }
-    // clean massive pools
-    // errs = [];
-    // errs = transactions.find({ amount:{'$jgt': 1000000000000 }});
-    // console.log(`big pools found: ${errs.length}`);
+function clean(option = false) {
+    function logger(message){
+        if(option) {
+            winston.log(message);
+        } else {
+            console.log(message);
+        }
+    }
+    logger('--------Starting clean--------');
+    // -------------- WALLETS -------------
+    // skeleton fx
     function cleanWallet(whereCond = null, message = 'bad where condition', cleanerCond = (obj) => { return; }) {
         var badObjs = [];
         if(whereCond!==null) badObjs = wallets.where(whereCond);
-        console.log(`${message} ${badObjs.length}`);
+        logger(`${message} ${badObjs.length}`);
         for (var i=0;i<badObjs.length;i++) {
-            console.log(`${badObjs[i].wallet_id} corrupt`);
+            logger(`${badObjs[i].wallet_id} corrupt, balance: ${badObjs[i].balance}`);
             badObjs[i] = cleanerCond(badObjs[i]);
+            logger(`new balance: ${badObjs[i].balance}`)
         }
-        if (badObjs.length>0) wallets.update(badObjs);
+        if ((badObjs.length>0) && (this.option!==false)) wallets.update(badObjs);
     }
     // clean NaNs or exponentials
     cleanWallet(function(obj){
@@ -99,6 +98,126 @@ function clean() {
         obj.balance = Math.abs(obj.balance);
         return obj;
     });
+    // decimals in wallet (doesn't show up in graph!)
+    cleanWallet(function(obj){
+        return (parseFloat(obj.balance)%1!==0);
+    },"float balances found:",function(obj) {
+        // reset to 0
+        obj.balance = Math.round(obj.balance);
+        return obj;
+    });
+    // --------- TRANSACTIONS ----------
+    // helper function
+    function createTransaction(amount, from_wallet_id, to_wallet_id,time=new Date()) {
+        transactions.insert({
+            from_wallet_id: from_wallet_id,
+            to_wallet_id: to_wallet_id,
+            amount: amount,
+            time: time
+        });
+    
+        var fromWallet = wallets.findObject({"wallet_id": from_wallet_id});
+        if(!fromWallet) return;
+        fromWallet.balance = parseFloat(fromWallet.balance) - parseFloat(amount);
+        
+        var toWallet = wallets.findObject({"wallet_id": to_wallet_id});
+        if(!toWallet) return;
+        toWallet.balance = parseFloat(toWallet.balance) + parseFloat(amount);
+    
+        var newBalances = {"fromBalance": fromWallet.balance, "toBalance": toWallet.balance};
+    
+        return newBalances;
+    }
+    function cleanNegTrxs() {
+        var errs = [];
+        var fixes = 0;
+        // clean negatives
+        errs = transactions.find({ amount:{'$jlt': 0}});
+        logger(`neg trxs found: ${errs.length}`);
+        for (var i=0;i<errs.length;i++) {
+            if (isNaN(errs[i].amount)) {
+                transactions.remove(errs[i]);
+            };
+            var fixed = transactions.find({ amount: {'$eq': Math.abs(errs[i].amount)}, from_wallet_id: { '$eq': errs[i].from_wallet_id}, to_wallet_id: { '$eq': errs[i].to_wallet_id }, time: {'$eq':errs[i].time} });
+            if (fixed.length===0) {
+                logger(`fixing tr ${i} at ${errs[i].time} from ${errs[i].from_wallet_id} to ${errs[i].to_wallet_id}, amount: ${errs[i].amount}`);
+                // make transaction reverting change in same account. (crediting coins back)
+                if (option!==false) { 
+                    var ret = createTransaction(Math.abs(errs[i].amount),errs[i].from_wallet_id,errs[i].to_wallet_id,errs[i].time);
+                    logger(ret);
+                    if (ret===undefined) winston.error('transaction not fixed.');
+                    else fixes += 1;
+                }
+            }
+        }
+        logger(`neg trxs fixed: ${fixes}`);
+    }
+    // clean laundered wallets - recursive strat
+    // account balances - check for neg trxs - follow every sent after neg - recursively repeat algo for sent to wallet
+    // recalculate their balance if the negative transaction hadn't happened
+    // recalculate their balance after each subsequent transaction
+    // invalidate any of those transactions that shouldn't of been possible
+    function cleanRecursiveInvalidWallets() {
+        function checkTrxsByWallet(walletIndex = null, refWallet = null, refTrx = null) {
+            if (walletIndex===null) return;
+            // find wallet at given index
+            var [currWallet,currWalletIndex] = wallets.get(walletIndex,true);
+            if (refWallet===null) logger(`${currWallet.wallet_id} - balance: ${currWallet.balance}`);
+            else logger(`tracing from ${refWallet.wallet_id} - ${currWallet.wallet_id} - balance: ${currWallet.balance}`);
+            // check if bad trxs actually exist in association, if not, leave, only perform if refWallet and refTrx not set (i.e. first call)
+            if (refWallet===null || refTrx===null) {
+                var trxs = transactions.find({ 'from_wallet_id': { '$eq': currWallet.wallet_id },'amount': { '$lt': 0 }});
+                if (trxs.length===0) return;
+            }
+            // potential perp found, repull with all bad trxs - assumed to be in order from oldest to newest? - after certain id if provided
+            // if refTrx provided - find the trx associated to new wallet with the same amount - get everything greater than the id of this trx if it exists. 
+            // if nothing exists after, send that money back to referrer. -- not doing this coin trace rn, innocent people get their balances fucked --
+            //  : transactions.find({ 'from_wallet_id': { '$eq': currWallet.wallet_id }, '$loki': { '$gt': refTrx['$loki'] }});
+            trxs = transactions.find({ 'from_wallet_id': { '$eq': currWallet.wallet_id }});
+            // trxs is an array
+            if (trxs.length!==0) {
+                // remember current balance accounts for sends and receives, we're just removing checking against sends
+                var recalcBalance = currWallet.balance;
+                for (var j=0;j<trxs.length;j++) {
+                    var originalAttackedWallet = null;
+                    // check for invalid trx amounts
+                    if (parseFloat(trxs[j].amount)<0) {
+                        logger(`corrupt trx ${trxs[j]['$loki']} /w ${trxs[j].amount}`);
+                        // reverse trx
+                        logger(`sending ${Math.abs(trxs[j].amount)} back to ${trxs[j].to_wallet_id} from bad ${trxs[j].from_wallet_id}`);
+                        // would investigate here recursively if we did a coin trace instead - we're not
+                    } else {
+                        // account for trx, this won't necessarily trace back money, only fix trxs that are impossible, and compensate
+                        if (recalcBalance >= trxs[j].amount) {
+                            recalcBalance -= parseFloat(trxs[j].amount);
+                        } else {
+                            // impossible trx (because we ignored neg trxs from if) - have to void this trx - how? 
+                            // set this bad trx and wallet as a referral - go to wallet it got sent to 
+                            // look for trx in this wallet with same amount and from set to referral - take that trx's id
+                            // search for trxs greater than that trx's id , if none then subtract from that wallet's balance, remove trx
+                            // if final SENT trx
+                            if (j==(trxs.length-1)) {
+                                
+                            }
+                        }
+                    }
+                }
+            }
+            return trxs;
+        }
+        // TEST:
+        try {
+            // lokijs index starts at 1
+            for(var i=50;i<80;i++) {
+                var updatedTrxs = checkTrxsByWallet(i);
+                if (updatedTrxs===undefined || updatedTrxs===null) logger('No trxs for wallet or trxs good.');
+            }
+        } catch (error) {
+            logger(error);
+        }
+    }
+    // clean trxs
+    cleanRecursiveInvalidWallets();
 }
 // Serve frontend/public
 app.use(express.static(path.join(__dirname, 'frontend/build')));
@@ -227,8 +346,8 @@ io.on('connection', function(client) {
         var from_wallet_key = transaction.from_wallet_key;
         var to_wallet_id = transaction.to_wallet_id;
         var amount = transaction.amount;
-
-        if (isNaN(amount) || amount<0) return;
+        // invalidate bad amounts
+        if (isNaN(amount) || amount<0 || parseFloat(amount)%1!==0) return;
         if (!(from_wallet_id && from_wallet_key && to_wallet_id && amount)) return;
 
         var senderWallet = wallets.findObject({wallet_id: from_wallet_id});
@@ -453,7 +572,7 @@ function getTeamStats() {
             if(!isNaN(parseFloat(w.balance))) {
                 teamTotals[w.team] += parseFloat(w.balance);
             } else {
-                teamTotals[w.team] += 0;
+                teamTotals[w.team] += 0.0;
             }
         }
     }

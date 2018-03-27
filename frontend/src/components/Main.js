@@ -21,7 +21,8 @@ class Main extends Component {
     this.state = {
       quote: this.quotes[Math.floor(Math.random() * this.quotes.length)],
       graphData: [],
-      legendConfig: colorConfig
+      legendConfig: colorConfig,
+      walletID: window.localStorage.getItem('wallet_id')
     };
     this.updateState = this.updateState.bind(this);
   }
@@ -53,7 +54,7 @@ class Main extends Component {
   }
 
   render() {
-    const { quote } = this.state;
+    const { quote, walletID } = this.state;
 
     return (
 
@@ -72,10 +73,10 @@ class Main extends Component {
                 </div></div>
                 <h2 className='p-font f4 yes-chart'>Live MacCoin wealth distribution across campus</h2>
                 <h2 className='p-font f4 no-chart'>Switch to landscape view to see MacCoin wealth distribution!</h2>
-              <div className='flex-grow pv5'>
+              <div className='flex-grow pv7'>
                 <h2 className='s-font f3 it'>Help your faculty - start mining <span className='highlight'>MacCoin</span> now!</h2>
                 <LinkContainer to='/mining'>
-                  <Button className='btn-primary' bsSize='large'>Start Mining!</Button>
+                  <Button className='btn-primary' bsSize='large'>{ walletID ? 'Resume Mining!' : 'Start Mining!'}</Button>
                 </LinkContainer>
               </div>
             </div>

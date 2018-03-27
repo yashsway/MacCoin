@@ -20,8 +20,7 @@ class Wallet extends Component {
       sendAmount: '',
       recieverID: '',
       team: '',
-      transactions: [],
-      error: false
+      transactions: []
     };
     this.updateState = this.updateState.bind(this);
     this.getValidationState = this.getValidationState.bind(this);
@@ -72,7 +71,7 @@ class Wallet extends Component {
   }
 
   render() {
-    const { sendAmount, recieverID, walletID, balance, team, transactions, error } = this.state;
+    const { sendAmount, recieverID, walletID, balance, team, transactions } = this.state;
 
     return (
       <div className='block wallet-page pa5'>
@@ -152,7 +151,7 @@ class Wallet extends Component {
           <h2 className='f3'>Transaction History:</h2>
           <div className='flex flex-column transactions-container'>
             { transactions.map((t) => {
-              return <div key={t.$loki} className={`info-box ${t.from_wallet_id == walletID ? 'sent' :'received'}`}> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}m from {t.from_wallet_id} on {moment(t.time).format('LLLL')}</div>
+              return <div key={t.$loki} className={`info-box ${t.from_wallet_id == walletID ? 'sent' :'received'}`}> {t.from_wallet_id == walletID ? 'Sent' :'Recieved'} {t.amount}mcoin {t.from_wallet_id == walletID ? 'to' : 'from'} {t.from_wallet_id == walletID ? `${t.to_wallet_id} from ${t.from_wallet_id}` : `${t.from_wallet_id} to ${t.to_wallet_id}`} on {moment(t.time).format('LLLL')}</div>
             })}
           </div>
         </div>

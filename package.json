@@ -1,23 +1,23 @@
 {
   "name": "maccoin",
   "version": "1.0.0",
-  "description": "",
+  "description": "McMaster's cryptocurrency for Kipling 2018. Built by the Knaves.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Niko Savas, Jemar Jones, Vicky Bilbily, Yash Gopal and Ocean Cheung",
   "license": "ISC",
   "dependencies": {
-    "chart.js": "^1.1.1",
-    "chartjs": "^0.3.24",
+    "bunyan": "^1.8.12",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "firebase": "^4.12.0",
     "lokijs": "^1.5.3",
-    "react-chartjs": "^1.2.0",
     "socket.io": "^2.0.4",
-    "socket.io-client": "^2.0.4"
-  }
+    "socket.io-client": "^2.0.4",
+    "winston": "^2.4.1"
+  },
+  "devDependencies": {}
 }
